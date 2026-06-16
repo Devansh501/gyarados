@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+.splash-container {
+  position: absolute;
+  inset: 0;
+  background-color: #090E17; /* Deep matte slate */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #F8FAFC;
+  -webkit-app-region: drag;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Precision Dot Grid Background */
+.splash-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(#1E293B 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.5;
+  z-index: 1;
+}
+
+/* Subtle Vignette */
+.splash-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 30%, #090E17 100%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.splash-content-wrapper {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
+}
+
+.logo-container {
+  width: 90px;
+  height: 90px;
+  margin-bottom: 2.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.text-container {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.company-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: #64748B;
+  margin: 0 0 0.75rem 0;
+}
+
+.product-name {
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: #F8FAFC;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.loading-section {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.loading-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.status-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: #06B6D4; /* Technical Cyan */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.percentage {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: #94A3B8;
+}
+
+.progress-track {
+  width: 100%;
+  height: 1px;
+  background-color: #1E293B;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: #06B6D4;
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.4);
+}

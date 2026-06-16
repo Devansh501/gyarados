@@ -1,0 +1,269 @@
+.app-wrapper {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #090E17; /* Deep matte slate */
+  color: #F8FAFC;
+  font-family: 'Inter', -apple-system, sans-serif;
+  overflow: hidden;
+}
+
+/* Global Grid Background */
+.app-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(#1E293B 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.5;
+  z-index: 1;
+}
+
+.app-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 30%, #090E17 100%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.container {
+  width: 100%;
+  max-width: 900px;
+  padding: 2.5rem;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 10;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.header-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: #06B6D4;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+  display: inline-block;
+}
+
+.header h1 {
+  font-size: 2rem;
+  font-weight: 300;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  color: #64748B;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.connection-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.option-card {
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid #1E293B;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #F8FAFC;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  outline: none;
+}
+
+.option-card:hover, .option-card:focus-visible {
+  background: rgba(15, 23, 42, 0.8);
+  border-color: #06B6D4;
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.1);
+}
+
+.option-card.highlight {
+  border-color: rgba(6, 182, 212, 0.3);
+}
+
+.option-card.highlight:hover {
+  border-color: #06B6D4;
+}
+
+.icon {
+  color: #06B6D4;
+  margin-bottom: 1.5rem;
+  opacity: 0.8;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.option-card:hover .icon {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+.option-card h2 {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: 0.02em;
+}
+
+.option-card p {
+  color: #94A3B8;
+  font-size: 0.85rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Discovery Section */
+.discovery-section {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: #64748B;
+  font-size: 0.85rem;
+  font-family: 'JetBrains Mono', monospace;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 2rem;
+  transition: color 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.back-btn:hover {
+  color: #F8FAFC;
+}
+
+.wifi-panel,
+.placeholder-panel {
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid #1E293B;
+  padding: 3rem;
+}
+
+.wifi-panel h2 {
+  font-size: 1.5rem;
+  font-weight: 300;
+  margin: 0 0 0.5rem 0;
+}
+
+.wifi-panel p {
+  color: #94A3B8;
+  font-size: 0.9rem;
+  margin: 0 0 2.5rem 0;
+}
+
+.scan-btn {
+  background-color: transparent;
+  color: #06B6D4;
+  border: 1px solid #06B6D4;
+  padding: 1rem 2rem;
+  font-size: 0.9rem;
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease;
+  letter-spacing: 0.05em;
+}
+
+.scan-btn:hover:not(:disabled) {
+  background-color: rgba(6, 182, 212, 0.1);
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+}
+
+.scan-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: #64748B;
+  color: #64748B;
+}
+
+.error-box {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  font-size: 0.85rem;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.device-list {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2.5rem;
+  border: 1px dashed #1E293B;
+  color: #64748B;
+  font-size: 0.9rem;
+}
+
+.device-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(30, 41, 59, 0.4);
+  padding: 1.25rem 1.5rem;
+  border: 1px solid #1E293B;
+  transition: border-color 0.2s ease;
+}
+
+.device-card:hover {
+  border-color: #334155;
+}
+
+.device-info strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  color: #F8FAFC;
+}
+
+.device-info span {
+  color: #06B6D4;
+  font-size: 0.8rem;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.connect-btn {
+  background-color: #06B6D4;
+  color: #090E17;
+  border: none;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.85rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.connect-btn:hover {
+  opacity: 0.9;
+}
