@@ -5,6 +5,7 @@ import {
   getDefaultModbusPort,
   HEARTBEAT_INTERVAL_MS,
   MAX_POLL_FAILURES,
+  MODBUS_CONNECT_TIMEOUT_MS,
   MODBUS_TIMEOUT_MS,
 } from './constants/network';
 
@@ -35,7 +36,6 @@ class PumpManager extends EventEmitter {
     }
 
     const client = new ModbusRTU();
-    client.setTimeout(MODBUS_TIMEOUT_MS);
 
     const state: PumpState = {
       ip,
@@ -43,22 +43,41 @@ class PumpManager extends EventEmitter {
       failCount: 0,
       client,
       pollInterval: null,
-      isPolling: false
+      isPolling: false,
     };
 
     this.pumps.set(ip, state);
     this.emit('status-changed', { ip, status: state.status });
 
     try {
-      // Connect to the pump
-      await client.connectTCP(ip, { port });
+      await client.connectTCP(ip, { port, timeout: MODBUS_CONNECT_TIMEOUT_MS });
+
+      if (!this.isCurrentState(ip, state)) {
+        this.closeClient(client);
+        return;
+      }
+
       client.setID(1); // Default unit ID
+      client.setTimeout(MODBUS_TIMEOUT_MS);
+
+      await client.readHoldingRegisters(MODBUS_REGISTERS.CYCLES_PENDING, 1);
+
+      if (!this.isCurrentState(ip, state)) {
+        this.closeClient(client);
+        return;
+      }
 
       state.status = 'CONNECTED';
+      state.failCount = 0;
       this.emit('status-changed', { ip, status: state.status });
 
       state.pollInterval = setInterval(() => this.pollPump(ip), HEARTBEAT_INTERVAL_MS);
     } catch (error) {
+      if (!this.isCurrentState(ip, state)) {
+        this.closeClient(client);
+        return;
+      }
+
       console.error(`[PumpManager] Failed to connect to ${ip}:`, error);
       this.handleDisconnect(ip);
       throw error;
@@ -76,7 +95,7 @@ class PumpManager extends EventEmitter {
     state.isPolling = true;
 
     try {
-      await state.client.readHoldingRegisters(MODBUS_REGISTERS.DEVICE_ID, 1);
+      await state.client.readHoldingRegisters(MODBUS_REGISTERS.CYCLES_PENDING, 1);
 
       if (!this.pumps.has(ip) || state.status !== 'CONNECTED') return;
 
@@ -108,18 +127,26 @@ class PumpManager extends EventEmitter {
     }
 
     if (state.client) {
-      try {
-        state.client.close(() => {});
-      } catch (e) {
-        // Ignore close errors
-      }
+      this.closeClient(state.client);
       state.client = null;
     }
-    
+
     // Remove from map to clean up memory
     this.pumps.delete(ip);
 
     this.emit('status-changed', { ip, status: 'DISCONNECTED' });
+  }
+
+  private isCurrentState(ip: string, state: PumpState) {
+    return this.pumps.get(ip) === state;
+  }
+
+  private closeClient(client: ModbusRTU) {
+    try {
+      client.close(() => {});
+    } catch {
+      // Ignore close errors; the TCP socket may already be closed or unopened.
+    }
   }
 }
 

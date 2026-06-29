@@ -1,6 +1,6 @@
 import type { PumpStatus } from './pumpManager';
 
-export type UiPumpStatus = 'available' | 'connecting' | 'connected' | 'error';
+export type UiPumpStatus = 'available' | 'connecting' | 'connected' | 'error' | 'disconnected';
 
 export interface UiDiscoveredDevice {
   ip: string;
@@ -14,7 +14,7 @@ export function toUiPumpStatus(status: PumpStatus): UiPumpStatus {
     case 'CONNECTED':
       return 'connected';
     case 'DISCONNECTED':
-      return 'available';
+      return 'disconnected';
   }
 }
 

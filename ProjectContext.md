@@ -34,8 +34,12 @@ Because the physical pump operates purely as a server and does not broadcast its
   - The App broadcasts the string `DISCOVER_PUMP_REQUEST` to port `5555` on the local network multiple times.
   - The Pump firmware listens on UDP port `5555` and responds directly to the sender with a string format `PUMP_ID:<DeviceID>`.
 - **Reliability:** Because UDP is "fire and forget," the app mitigates dropped packets by broadcasting 3 times in quick succession.
+- **Adapter-aware discovery:** The app broadcasts to both `255.255.255.255` and each active IPv4 adapter's directed broadcast address, which improves discovery on Wi-Fi networks that filter limited broadcasts.
+- **Connection validation:** A TCP socket opening is not treated as a complete pump connection until the pump responds to a Modbus read of the cycles pending register. Any valid response from that register means the pump is reachable.
+- **Liveness tracking:** Connected pumps are kept online with lightweight Modbus polling. Poll failures are counted and the pump is disconnected after repeated failures.
 
 ## 5. Recent Changes
+- **2026-06-16:** Improved Wi-Fi discovery and connection handling. Discovery now sends immediate retries to global and per-interface broadcast addresses with a shorter scan window. TCP connection attempts now have an explicit timeout, validate the cycles pending register before reporting connected, and clean up stale in-flight connections safely.
 - **2026-06-12:** Switched Wi-Fi Discovery architecture from TCP Subnet Scanning to UDP Broadcast for instant, industry-standard discovery. Updated discovery logic and mock pump to match the new UDP contract.
 
 ---

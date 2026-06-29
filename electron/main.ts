@@ -32,6 +32,10 @@ let win: BrowserWindow | null;
 
 function createWindow() {
   win = new BrowserWindow({
+    width: 900,
+    height: 650,
+    minWidth: 800,
+    minHeight: 600,
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     show: false, // Hide until ready-to-show
     webPreferences: {
