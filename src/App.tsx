@@ -98,7 +98,7 @@ function App() {
   const handleScan = async () => {
     setIsScanning(true);
     setError(null);
-    setDevices([]);
+    setDevices((prev) => prev.filter((d) => d.status === 'connected' || d.status === 'connecting'));
     try {
       const result = await window.ipcRenderer.invoke('scan-wifi-devices');
       if (!result.success) {

@@ -36,8 +36,10 @@ function createWindow() {
     height: 650,
     minWidth: 800,
     minHeight: 600,
+    title: 'Microlit connector',
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     show: false, // Hide until ready-to-show
+    autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
     },
