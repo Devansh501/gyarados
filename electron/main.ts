@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { UDP_DISCOVERY_PORT, getDefaultModbusPort } from './constants/network';
+import { UDP_DISCOVERY_PORT, getDefaultModbusPort } from '../src/constants';
 import { toUiDevice, toUiPumpStatus } from './ipcTypes';
 import { scanWifiDevices } from './scanner';
 import { pumpManager } from './pumpManager';

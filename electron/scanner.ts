@@ -2,10 +2,10 @@ import * as dgram from 'node:dgram';
 import os from 'node:os';
 import {
   UDP_DISCOVERY_PORT,
+  WIFI_SCAN_TIMEOUT_MS,
   WIFI_DISCOVERY_RETRIES,
   WIFI_DISCOVERY_RETRY_DELAY_MS,
-  WIFI_SCAN_TIMEOUT_MS,
-} from './constants/network';
+} from '../src/constants';
 
 export interface DiscoveredDevice {
   ip: string;

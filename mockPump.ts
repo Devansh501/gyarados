@@ -1,17 +1,17 @@
 import ModbusRTU from "modbus-serial";
 import dgram from "node:dgram";
+import { MODBUS_TCP_PORT_DEV, UDP_DISCOVERY_PORT } from "./src/constants.js";
+import { MODBUS_REGISTERS } from "./src/registers.js";
 
 const vector = {
   getInputRegister: function(addr, unitID) { return addr; },
   getHoldingRegister: function(addr, unitID) {
     console.log(`[Pump] Read request for Register ${addr}`);
-    // Register 0: Device ID (e.g., 9000)
-    if (addr === 0) {
-      return 9000; 
+    if (addr === MODBUS_REGISTERS.DEVICE_ID.address) {
+      return MODBUS_REGISTERS.DEVICE_ID.defaultValue ?? 0;
     }
-    // Register 123: Cycles pending
-    if (addr === 123) {
-      return 1; // Return 1 cycle pending
+    if (addr === MODBUS_REGISTERS.CYCLES_PENDING.address) {
+      return MODBUS_REGISTERS.CYCLES_PENDING.defaultValue ?? 0;
     }
     return 0;
   },
@@ -27,7 +27,7 @@ const vector = {
 };
 
 // Set the IP and Port
-const port = 5020;
+const port = MODBUS_TCP_PORT_DEV;
 const ip = "0.0.0.0"; // Listen on all interfaces
 
 console.log(`Starting mock Peristaltic Pump Modbus TCP server on port ${port}...`);
@@ -42,7 +42,7 @@ serverTCP.on("socketError", function(err){
 console.log("Pump is running and ready to accept Modbus TCP connections.");
 
 // --- UDP BROADCAST LISTENER ---
-const udpPort = 5555;
+const udpPort = UDP_DISCOVERY_PORT;
 const serverUDP = dgram.createSocket('udp4');
 
 serverUDP.on('error', (err) => {

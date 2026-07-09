@@ -2,6 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Progress } from './components/ui/progress';
 import { Leaf } from 'lucide-react';
+import {
+  ANIMATION_SPLASH_DELAY_1,
+  ANIMATION_SPLASH_DELAY_2,
+  ANIMATION_SPLASH_DELAY_3,
+  ANIMATION_SPLASH_DURATION,
+} from './constants';
 
 const SplashScreen: React.FC = () => {
   const [progress, setProgress] = useState(0);
@@ -49,7 +55,7 @@ const SplashScreen: React.FC = () => {
           className="w-24 h-24 mb-10 relative flex items-center justify-center bg-card rounded-2xl shadow-xl border border-border"
           initial={{ opacity: 0, scale: 0.9, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.6 }}
+          transition={{ delay: ANIMATION_SPLASH_DELAY_1, duration: ANIMATION_SPLASH_DURATION }}
         >
           <img src="/logo.png" alt="Microlit Logo" className="w-16 h-16 object-contain z-10" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           {/* Fallback if logo not found */}
@@ -62,7 +68,7 @@ const SplashScreen: React.FC = () => {
           className="text-center mb-16"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
+          transition={{ delay: ANIMATION_SPLASH_DELAY_2, duration: ANIMATION_SPLASH_DURATION }}
         >
           <h2 className="text-xs font-bold tracking-[0.3em] text-muted-foreground uppercase mb-3">Microlit</h2>
           <h1 className="text-3xl font-light tracking-tight text-foreground">Peristaltic Pump</h1>
@@ -72,7 +78,7 @@ const SplashScreen: React.FC = () => {
           className="w-full flex flex-col gap-3"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.6 }}
+          transition={{ delay: ANIMATION_SPLASH_DELAY_3, duration: ANIMATION_SPLASH_DURATION }}
         >
           <div className="flex justify-between items-end px-1">
             <span className="font-mono text-[10px] font-semibold text-primary uppercase tracking-widest">{statusText}</span>

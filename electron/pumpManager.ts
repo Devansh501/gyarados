@@ -1,13 +1,13 @@
 import ModbusRTU from 'modbus-serial';
 import { EventEmitter } from 'node:events';
-import { MODBUS_REGISTERS } from './constants/registers';
+import { MODBUS_REGISTERS } from '../src/registers';
 import {
   getDefaultModbusPort,
   HEARTBEAT_INTERVAL_MS,
   MAX_POLL_FAILURES,
   MODBUS_CONNECT_TIMEOUT_MS,
   MODBUS_TIMEOUT_MS,
-} from './constants/network';
+} from '../src/constants';
 
 export type PumpStatus = 'CONNECTING' | 'CONNECTED' | 'DISCONNECTED';
 
@@ -60,7 +60,7 @@ class PumpManager extends EventEmitter {
       client.setID(1); // Default unit ID
       client.setTimeout(MODBUS_TIMEOUT_MS);
 
-      await client.readHoldingRegisters(MODBUS_REGISTERS.CYCLES_PENDING, 1);
+      await client.readHoldingRegisters(MODBUS_REGISTERS.CYCLES_PENDING.address, 1);
 
       if (!this.isCurrentState(ip, state)) {
         this.closeClient(client);
@@ -95,7 +95,7 @@ class PumpManager extends EventEmitter {
     state.isPolling = true;
 
     try {
-      await state.client.readHoldingRegisters(MODBUS_REGISTERS.CYCLES_PENDING, 1);
+      await state.client.readHoldingRegisters(MODBUS_REGISTERS.CYCLES_PENDING.address, 1);
 
       if (!this.pumps.has(ip) || state.status !== 'CONNECTED') return;
 
