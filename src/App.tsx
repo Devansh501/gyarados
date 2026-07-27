@@ -7,16 +7,16 @@ import { ThemeProvider } from './components/ThemeProvider';
 import { ThemeToggle } from './components/ThemeToggle';
 import { ConnectionOptions } from './views/ConnectionOptions';
 import { DiscoveryView } from './views/DiscoveryView';
+import { RS485View } from './views/RS485View';
 import { useDeviceManager } from './hooks/useDeviceManager';
 import { APP_TOAST_TIMEOUT_MS, APP_SPLASH_SCREEN_DELAY_MS } from './constants';
 
 function App() {
   const [isSplashing, setIsSplashing] = useState(true);
-  const [activeTab, setActiveTab] = useState<'options' | 'wifi' | 'usb' | 'dashboard'>('options');
+  const [activeTab, setActiveTab] = useState<'options' | 'wifi' | 'rs485' | 'dashboard'>('options');
   const [selectedPumpIp, setSelectedPumpIp] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  const { devices, isScanning, error, scan, connect, disconnect } = useDeviceManager(setToastMessage);
+  const { devices, isScanning, error, scan, connect, scanRTU, disconnect, writeRegister } = useDeviceManager(setToastMessage);
 
   useEffect(() => {
     if (toastMessage) {
@@ -115,6 +115,16 @@ function App() {
                           onSelectPump={handleSelectPump}
                         />
                       )}
+
+                      {activeTab === 'rs485' && (
+                        <RS485View
+                          devices={devices}
+                          isScanning={isScanning}
+                          onBack={() => setActiveTab('options')}
+                          onScanRTU={scanRTU}
+                          onSelectPump={handleSelectPump}
+                        />
+                      )}
                     </AnimatePresence>
                   </div>
                 </div>
@@ -137,6 +147,7 @@ function App() {
                 onSelectPump={setSelectedPumpIp}
                 onDisconnect={disconnect}
                 onBack={() => setActiveTab('wifi')}
+                writeRegister={writeRegister}
               />
             </motion.div>
           )}

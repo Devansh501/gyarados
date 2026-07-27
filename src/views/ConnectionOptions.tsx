@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
-import { Wifi, Server, ChevronRight } from 'lucide-react';
+import { Wifi, ChevronRight, Cable } from 'lucide-react';
 import { Card, CardTitle, CardDescription } from '../components/ui/card';
 
 interface Props {
-  onSelectOption: (option: 'wifi' | 'usb') => void;
+  onSelectOption: (option: 'wifi' | 'rs485') => void;
 }
 
 export function ConnectionOptions({ onSelectOption }: Props) {
@@ -36,13 +36,18 @@ export function ConnectionOptions({ onSelectOption }: Props) {
           <ChevronRight className="text-muted-foreground opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
         </Card>
         
-        <Card className="cursor-pointer border-border/40 hover:border-primary/50 hover:bg-muted/30 transition-all flex items-center p-6 group shadow-sm hover:shadow-md opacity-70">
+
+
+        <Card 
+          className="cursor-pointer border-border/40 hover:border-primary/50 hover:bg-muted/30 transition-all flex items-center p-6 group shadow-sm hover:shadow-md"
+          onClick={() => onSelectOption('rs485')}
+        >
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mr-6 group-hover:scale-110 transition-transform">
-            <Server className="text-primary w-6 h-6" />
+            <Cable className="text-primary w-6 h-6" />
           </div>
           <div className="flex-1">
-            <CardTitle className="text-xl mb-1">Manual IP</CardTitle>
-            <CardDescription className="text-sm">Enter a static IP address</CardDescription>
+            <CardTitle className="text-xl mb-1">RS-485 Modbus</CardTitle>
+            <CardDescription className="text-sm">Connect via serial COM port directly</CardDescription>
           </div>
           <ChevronRight className="text-muted-foreground opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
         </Card>

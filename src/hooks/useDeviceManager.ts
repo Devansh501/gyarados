@@ -7,7 +7,7 @@ export function useDeviceManager(setToastMessage: (msg: string) => void) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const handleDeviceFound = (_event: any, device: { ip: string; id: number }) => {
+    const handleDeviceFound = (_event: any, device: { ip: string; id: number; status?: any; pumpType?: any }) => {
       setDevices((prev) => {
         if (!prev.find((d) => d.ip === device.ip)) {
           return [...prev, normalizeDevice(device)];
@@ -34,12 +34,31 @@ export function useDeviceManager(setToastMessage: (msg: string) => void) {
       });
     };
 
+    const handlePumpMessage = (_event: any, msg: string) => {
+      setToastMessage(msg);
+    };
+
+    const handlePumpTestState = (_event: any, data: { ip: string; state: number }) => {
+      setDevices((prev) => {
+        return prev.map((d) => {
+          if (d.ip === data.ip) {
+            return { ...d, isRunning: data.state === 1 };
+          }
+          return d;
+        });
+      });
+    };
+
     window.ipcRenderer.on('device-found', handleDeviceFound);
     window.ipcRenderer.on('pump-status-changed', handleStatusChanged);
+    window.ipcRenderer.on('pump-message', handlePumpMessage);
+    window.ipcRenderer.on('pump-test-state', handlePumpTestState);
 
     return () => {
       window.ipcRenderer.removeAllListeners('device-found');
       window.ipcRenderer.removeAllListeners('pump-status-changed');
+      window.ipcRenderer.removeAllListeners('pump-message');
+      window.ipcRenderer.removeAllListeners('pump-test-state');
     };
   }, [setToastMessage]);
 
@@ -54,7 +73,7 @@ export function useDeviceManager(setToastMessage: (msg: string) => void) {
       } else if (result.devices && result.devices.length > 0) {
         setDevices((prev) => {
           const newDevices = [...prev];
-          result.devices.forEach((d: { ip: string; id: number }) => {
+          result.devices.forEach((d: { ip: string; id: number; status?: any; pumpType?: any }) => {
             if (!newDevices.find((nd) => nd.ip === d.ip)) {
               newDevices.push(normalizeDevice(d));
             }
@@ -80,8 +99,52 @@ export function useDeviceManager(setToastMessage: (msg: string) => void) {
     }
   }, []);
 
+  const scanRTU = useCallback(
+    async (
+      path: string,
+      options: {
+        baudRate: number;
+        dataBits: 8 | 7 | 6 | 5;
+        parity: 'none' | 'even' | 'mark' | 'odd' | 'space';
+        stopBits: 1 | 2;
+      }
+    ) => {
+      setIsScanning(true);
+      setError(null);
+      // For RTU, we might want to clear previous RTU devices for this path?
+      // Just let the scan add new ones.
+      
+      try {
+        const result = await window.ipcRenderer.invoke('scan-rtu-devices', path, options);
+        if (!result.success) {
+          setError(result.error || `Failed to scan RTU port ${path}`);
+        } else if (result.devices && result.devices.length > 0) {
+          // The device-found event handler will also catch them, but we can process here too
+          setDevices((prev) => {
+            const newDevices = [...prev];
+            result.devices.forEach((d: { ip: string; id: number; status?: any; pumpType?: any }) => {
+              if (!newDevices.find((nd) => nd.ip === d.ip)) {
+                newDevices.push(normalizeDevice(d));
+              }
+            });
+            return newDevices;
+          });
+        }
+      } catch (err: any) {
+        setError(err.message || 'Unknown IPC Error');
+      } finally {
+        setIsScanning(false);
+      }
+    },
+    []
+  );
+
   const disconnect = useCallback((ip: string) => {
     window.ipcRenderer.invoke('disconnect-pump', ip);
+  }, []);
+
+  const writeRegister = useCallback(async (ip: string, register: number, value: number) => {
+    return await window.ipcRenderer.invoke('write-register', ip, register, value);
   }, []);
 
   return {
@@ -90,6 +153,8 @@ export function useDeviceManager(setToastMessage: (msg: string) => void) {
     error,
     scan,
     connect,
+    scanRTU,
     disconnect,
+    writeRegister,
   };
 }

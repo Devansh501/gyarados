@@ -16,6 +16,11 @@ export const MODBUS_CONNECT_TIMEOUT_MS = 800;
 export const MODBUS_TIMEOUT_MS = 400;
 export const MAX_POLL_FAILURES = 3;
 
+/** RS-485 Config */
+export const MAX_RS485_DEVICES = 20;
+export const RS485_DISCOVERY_REGISTER = 3102;
+export const RS485_CHECK_ALIVE_INTERVAL = 500;
+
 /** Application UI Delays */
 export const APP_TOAST_TIMEOUT_MS = 3000;
 export const APP_SPLASH_SCREEN_DELAY_MS = 3500;

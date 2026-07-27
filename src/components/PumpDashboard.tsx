@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from './ui/card';
-import { Slider } from './ui/slider';
-import { Input } from './ui/input';
+import { useState } from 'react';
+import { PowerOff, ChevronLeft, Menu, Activity } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from './ui/button';
 import { ScrollArea } from './ui/scroll-area';
 import { Separator } from './ui/separator';
-import { Button } from './ui/button';
-import { PowerOff, Settings, Clock, Droplets, Activity, ChevronLeft, Menu } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import type { Device } from '../App';
+import type { Device } from '../types/device';
+import { BasePumpDashboard } from './dashboards/BasePumpDashboard';
 
 interface PumpDashboardProps {
   devices: Device[];
@@ -15,18 +13,17 @@ interface PumpDashboardProps {
   onSelectPump: (ip: string) => void;
   onDisconnect: (ip: string) => void;
   onBack: () => void;
+  writeRegister: (ip: string, register: number, value: number) => Promise<any>;
 }
-
-type Mode = 'menu' | 'time' | 'volume' | 'flow' | 'settings';
 
 export default function PumpDashboard({
   devices,
   selectedIp,
   onSelectPump,
   onDisconnect,
-  onBack
+  onBack,
+  writeRegister
 }: PumpDashboardProps) {
-  const [activeMode, setActiveMode] = useState<Mode>('menu');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const connectedPumps = devices.filter(d => d.status === 'connected');
@@ -49,182 +46,8 @@ export default function PumpDashboard({
 
   const handlePumpSelect = (ip: string) => {
     onSelectPump(ip);
-    setActiveMode('menu');
     setIsDrawerOpen(false);
   };
-
-  const renderModeMenu = () => (
-    <motion.div 
-      key="menu"
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98 }}
-      transition={{ duration: 0.3 }}
-      className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 h-full p-6 sm:p-10 max-w-5xl mx-auto"
-    >
-      <Card className="cursor-pointer border-border/50 hover:border-primary/50 hover:bg-card/80 transition-all flex flex-col items-center justify-center p-6 sm:p-10 text-center group bg-card shadow-sm" onClick={() => setActiveMode('time')}>
-        <Clock size={48} className="mb-4 text-primary opacity-80 group-hover:opacity-100 group-hover:-translate-y-1 transition-all duration-300" />
-        <CardTitle className="text-xl">Time Mode</CardTitle>
-        <CardDescription className="mt-2 text-sm">Run pump for a specific duration</CardDescription>
-      </Card>
-      
-      <Card className="cursor-pointer border-border/50 hover:border-primary/50 hover:bg-card/80 transition-all flex flex-col items-center justify-center p-6 sm:p-10 text-center group bg-card shadow-sm" onClick={() => setActiveMode('volume')}>
-        <Droplets size={48} className="mb-4 text-primary opacity-80 group-hover:opacity-100 group-hover:-translate-y-1 transition-all duration-300" />
-        <CardTitle className="text-xl">Volume Mode</CardTitle>
-        <CardDescription className="mt-2 text-sm">Dispense a specific volume</CardDescription>
-      </Card>
-
-      <Card className="cursor-pointer border-border/50 hover:border-primary/50 hover:bg-card/80 transition-all flex flex-col items-center justify-center p-6 sm:p-10 text-center group bg-card shadow-sm" onClick={() => setActiveMode('flow')}>
-        <Activity size={48} className="mb-4 text-primary opacity-80 group-hover:opacity-100 group-hover:-translate-y-1 transition-all duration-300" />
-        <CardTitle className="text-xl">Flow Mode</CardTitle>
-        <CardDescription className="mt-2 text-sm">Continuous operation at set rate</CardDescription>
-      </Card>
-
-      <Card className="cursor-pointer border-border/50 hover:border-primary/50 hover:bg-card/80 transition-all flex flex-col items-center justify-center p-6 sm:p-10 text-center group bg-card shadow-sm" onClick={() => setActiveMode('settings')}>
-        <Settings size={48} className="mb-4 text-primary opacity-80 group-hover:opacity-100 group-hover:-translate-y-1 transition-all duration-300" />
-        <CardTitle className="text-xl">Settings</CardTitle>
-        <CardDescription className="mt-2 text-sm">Hardware calibration & reset</CardDescription>
-      </Card>
-    </motion.div>
-  );
-
-  const renderTimeMode = () => (
-    <motion.div 
-      key="time"
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      transition={{ duration: 0.3 }}
-      className="p-6 sm:p-10 h-full flex flex-col max-w-4xl mx-auto"
-    >
-      <Button variant="ghost" className="self-start mb-8 -ml-4 text-muted-foreground hover:text-foreground" onClick={() => setActiveMode('menu')}>
-        <ChevronLeft className="mr-2 h-4 w-4" /> Back to Menu
-      </Button>
-      <div className="space-y-10 max-w-md">
-        <div>
-          <h3 className="text-xs font-bold text-primary mb-3 uppercase tracking-widest">Duration</h3>
-          <div className="flex gap-4 items-center">
-            <Input type="number" defaultValue={60} className="w-32 font-mono text-2xl h-14 bg-background border-border/50" />
-            <span className="text-muted-foreground font-mono text-lg">seconds</span>
-          </div>
-        </div>
-        <div>
-          <h3 className="text-xs font-bold text-primary mb-6 uppercase tracking-widest">Speed Level</h3>
-          <Slider defaultValue={[50]} max={100} step={1} className="cursor-pointer py-4" />
-          <div className="flex justify-between text-xs text-muted-foreground mt-2 font-mono">
-            <span>0%</span>
-            <span className="text-foreground font-bold bg-muted px-3 py-1 rounded-full">50%</span>
-            <span>100%</span>
-          </div>
-        </div>
-        <Button size="lg" className="w-full text-lg h-14 mt-4 shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform">
-          Start Dispense
-        </Button>
-      </div>
-    </motion.div>
-  );
-
-  const renderVolumeMode = () => (
-    <motion.div 
-      key="volume"
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      transition={{ duration: 0.3 }}
-      className="p-6 sm:p-10 h-full flex flex-col max-w-4xl mx-auto"
-    >
-      <Button variant="ghost" className="self-start mb-8 -ml-4 text-muted-foreground hover:text-foreground" onClick={() => setActiveMode('menu')}>
-        <ChevronLeft className="mr-2 h-4 w-4" /> Back to Menu
-      </Button>
-      <div className="space-y-10 max-w-md">
-        <div>
-          <h3 className="text-xs font-bold text-primary mb-3 uppercase tracking-widest">Target Volume</h3>
-          <div className="flex gap-4 items-center">
-            <Input type="number" defaultValue={250} className="w-32 font-mono text-2xl h-14 bg-background border-border/50" />
-            <span className="text-muted-foreground font-mono text-lg">mL</span>
-          </div>
-        </div>
-        <Button size="lg" className="w-full text-lg h-14 mt-4 shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform">
-          Start Dispense
-        </Button>
-      </div>
-    </motion.div>
-  );
-
-  const renderFlowMode = () => (
-    <motion.div 
-      key="flow"
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      transition={{ duration: 0.3 }}
-      className="p-6 sm:p-10 h-full flex flex-col max-w-4xl mx-auto"
-    >
-      <Button variant="ghost" className="self-start mb-8 -ml-4 text-muted-foreground hover:text-foreground" onClick={() => setActiveMode('menu')}>
-        <ChevronLeft className="mr-2 h-4 w-4" /> Back to Menu
-      </Button>
-      <div className="space-y-10 max-w-md">
-        <div>
-          <h3 className="text-xs font-bold text-primary mb-3 uppercase tracking-widest">Flow Rate</h3>
-          <div className="flex gap-4 items-center">
-            <Input type="number" defaultValue={15} className="w-32 font-mono text-2xl h-14 bg-background border-border/50" />
-            <span className="text-muted-foreground font-mono text-lg">mL/min</span>
-          </div>
-        </div>
-        <div className="p-5 bg-muted/30 border border-border/50 rounded-xl">
-          <h3 className="text-sm font-medium mb-2 text-foreground">Continuous Operation</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">The pump will run continuously at the set flow rate until manually stopped.</p>
-        </div>
-        <Button size="lg" className="w-full text-lg h-14 shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform">
-          Start Pump
-        </Button>
-      </div>
-    </motion.div>
-  );
-
-  const renderSettings = () => (
-    <motion.div 
-      key="settings"
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      transition={{ duration: 0.3 }}
-      className="p-6 sm:p-10 h-full flex flex-col max-w-4xl mx-auto"
-    >
-      <Button variant="ghost" className="self-start mb-8 -ml-4 text-muted-foreground hover:text-foreground" onClick={() => setActiveMode('menu')}>
-        <ChevronLeft className="mr-2 h-4 w-4" /> Back to Menu
-      </Button>
-      <div className="space-y-8">
-        <div className="max-w-xl">
-          <h3 className="text-xl font-semibold text-foreground mb-1">Hardware Calibration</h3>
-          <p className="text-sm text-muted-foreground mb-6">Adjust physical parameters for accurate volume calculation.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-            <div className="space-y-3">
-              <label className="text-xs font-mono font-bold text-primary uppercase tracking-wider">Tubing Size (mm)</label>
-              <Input type="number" defaultValue={3.2} className="font-mono h-14 text-lg bg-background border-border/50" />
-            </div>
-            <div className="space-y-3">
-              <label className="text-xs font-mono font-bold text-primary uppercase tracking-wider">Steps / mL</label>
-              <Input type="number" defaultValue={200} className="font-mono h-14 text-lg bg-background border-border/50" />
-            </div>
-          </div>
-          <Button variant="secondary" className="mt-8 border border-border/50">
-            Save Calibration
-          </Button>
-        </div>
-        
-        <Separator className="max-w-xl my-6 bg-border/50" />
-
-        <div className="max-w-xl p-6 bg-destructive/5 rounded-xl border border-destructive/20">
-          <h3 className="text-lg font-medium text-destructive mb-2">Danger Zone</h3>
-          <p className="text-sm text-muted-foreground mb-6">Actions here are irreversible.</p>
-          <Button variant="destructive" className="font-medium shadow-sm hover:bg-destructive/90 transition-colors">
-            Factory Reset Device Settings
-          </Button>
-        </div>
-      </div>
-    </motion.div>
-  );
 
   return (
     <div className="flex h-screen w-screen bg-background overflow-hidden relative">
@@ -315,8 +138,10 @@ export default function PumpDashboard({
                 Pump {selectedPump.id}
                 <span className="flex h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
               </h1>
-              <span className="text-primary font-mono tracking-wider text-xs opacity-80">
-                {selectedPump.ip}
+              <span className="text-primary font-mono tracking-wider text-xs opacity-80 flex items-center gap-2">
+                {selectedPump.ip} 
+                <span className="opacity-50">|</span> 
+                <span className="uppercase">{selectedPump.pumpType} Mode</span>
               </span>
             </div>
           </div>
@@ -333,11 +158,22 @@ export default function PumpDashboard({
         {/* Dynamic Content Area */}
         <main className="flex-1 overflow-y-auto bg-background/50 relative">
           <AnimatePresence mode="wait">
-            {activeMode === 'menu' && renderModeMenu()}
-            {activeMode === 'time' && renderTimeMode()}
-            {activeMode === 'volume' && renderVolumeMode()}
-            {activeMode === 'flow' && renderFlowMode()}
-            {activeMode === 'settings' && renderSettings()}
+            {selectedPump.pumpType === 'base' && (
+               <BasePumpDashboard key={`base-${selectedPump.ip}`} device={selectedPump} writeRegister={writeRegister} />
+            )}
+            {selectedPump.pumpType !== 'base' && (
+               <motion.div 
+                 key="unknown-pump"
+                 initial={{ opacity: 0 }}
+                 animate={{ opacity: 1 }}
+                 exit={{ opacity: 0 }}
+                 className="flex flex-col items-center justify-center h-full"
+               >
+                 <Activity className="w-12 h-12 text-muted-foreground opacity-50 mb-4" />
+                 <h2 className="text-xl font-medium text-foreground">Dashboard Not Available</h2>
+                 <p className="text-muted-foreground mt-2">The dashboard for {selectedPump.pumpType} pump is not yet implemented.</p>
+               </motion.div>
+            )}
           </AnimatePresence>
         </main>
       </div>

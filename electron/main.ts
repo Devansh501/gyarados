@@ -5,6 +5,7 @@ import { UDP_DISCOVERY_PORT, getDefaultModbusPort } from '../src/constants';
 import { toUiDevice, toUiPumpStatus } from './ipcTypes';
 import { scanWifiDevices } from './scanner';
 import { pumpManager } from './pumpManager';
+import { SerialPort } from 'serialport';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -103,14 +104,82 @@ app.whenReady().then(() => {
     }
   });
 
+  ipcMain.handle('get-serial-ports', async () => {
+    try {
+      const allPorts = await SerialPort.list();
+      
+      const filteredPorts = allPorts.filter(p => {
+        // Physical devices usually have a vendorId, pnpId, or manufacturer.
+        if (p.vendorId || p.pnpId || p.manufacturer) return true;
+        
+        // As a fallback, include common USB/Serial port naming conventions
+        const pathLower = p.path.toLowerCase();
+        if (pathLower.includes('usb') || pathLower.includes('acm') || pathLower.includes('ama')) return true;
+        
+        // On Windows, keep COM ports
+        if (process.platform === 'win32' && pathLower.startsWith('com')) return true;
+        
+        // Exclude default virtual/internal ports (like /dev/ttyS0 to ttyS31 on Linux)
+        return false;
+      });
+
+      return { success: true, ports: filteredPorts.map(p => p.path) };
+    } catch (error: any) {
+      return { success: false, error: error?.message ?? 'Failed to list ports' };
+    }
+  });
+
+  ipcMain.handle(
+    'scan-rtu-devices',
+    async (
+      _event,
+      path: string,
+      options: { baudRate: number; dataBits: 8 | 7 | 6 | 5; parity: 'none' | 'even' | 'mark' | 'odd' | 'space'; stopBits: 1 | 2 }
+    ) => {
+      try {
+        const found = await pumpManager.scanRTUDevices(path, options);
+        const devices = found.map(f => ({
+          id: f.unitId.toString(),
+          ip: f.id,
+          status: 'connected',
+        }));
+
+        for (const device of devices) {
+          if (win) {
+            win.webContents.send('device-found', device);
+          }
+        }
+
+        return { success: true, devices };
+      } catch (error: any) {
+        return { success: false, error: error?.message ?? 'RTU Scan failed' };
+      }
+    }
+  );
+
   ipcMain.handle('disconnect-pump', async (_event, ip: string) => {
     pumpManager.disconnectPump(ip);
     return { success: true };
   });
 
+  ipcMain.handle('write-register', async (_event, ip: string, register: number, value: number) => {
+    try {
+      await pumpManager.writeRegister(ip, register, value);
+      return { success: true };
+    } catch (error: any) {
+      return { success: false, error: error?.message ?? 'Failed to write register' };
+    }
+  });
+
   pumpManager.on('status-changed', ({ ip, status }) => {
     if (win) {
       win.webContents.send('pump-status-changed', { ip, status: toUiPumpStatus(status) });
+    }
+  });
+
+  pumpManager.on('pump-test-state', (data) => {
+    if (win) {
+      win.webContents.send('pump-test-state', data);
     }
   });
 

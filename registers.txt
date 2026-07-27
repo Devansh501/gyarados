@@ -1,0 +1,7849 @@
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+Lead Fluid Products MODBUS
+Communication Technology Standards
+
+No.: Q/B-LF-RDB-1015
+Version No.: The 15th revision of the first edition
+Prepared by: Liu Yang
+
+Date: 2022-04-09
+
+Reviewed by: Yuan Jichao
+
+Date: 2022-04-09
+
+Approved by: Zhang Yanfeng
+
+Date: 2022-04-09
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+1
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+Modify Record
+No.
+
+Version No.
+
+Date
+
+Prepared
+
+Adjust content
+
+1
+
+The 11th revision of
+the first edition
+
+2
+
+The 12th revision of
+the first edition
+
+2017-07-3
+
+Liu Yang
+
+Add mode
+example
+
+3
+
+The 13th revision of
+the first edition
+
+2018-04-17
+
+Yuan Jichao
+
+Modify BT-SV2 working mode
+
+4
+
+The 14th revision of
+the first edition
+
+2020-12-8
+
+Yuan Jichao
+
+Add remarks and modify BT-L and
+BT-F communication protocols
+
+5
+
+The 15th revision of
+the first edition
+
+2022-04-09
+
+Shi Tao
+
+Supplementary BT-SV3, BT-F V3
+
+description
+
+and
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+2
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+Contents
+1.
+2.
+3.
+4.
+
+Introduction .........................................................................................................................................................4
+Modbus Protocol ................................................................................................................................................4
+Instructions for Using .........................................................................................................................................6
+Parameters and Addresses of S Series Peristaltic Pump..................................................................................7
+4.1. Input Register (Not Storable) ..................................................................................................................7
+4.2. Holding Register (Not Storable) ..............................................................................................................8
+4.3. Holding Register (Power Down Can Store EEPROM) ...........................................................................8
+5. Parameters and Addresses of L Series Peristaltic Pump ................................................................................ 11
+5.1. Input Register (Not Storable) ................................................................................................................ 11
+5.2. Input Register (Not Storable) ................................................................................................................12
+5.3. Holding Register (Not Storable) ............................................................................................................13
+5.4. Holding Register (Power Down Storage FRAM)...................................................................................13
+5.5. Holding Register (Power Down Storage RAM) .....................................................................................17
+6. Parameters and Addresses of F Series Peristaltic Pump ................................................................................17
+6.1. Input Register (Not Storable) ................................................................................................................17
+6.2. Input Register (Not Storable) ................................................................................................................19
+6.3. Holding Register (Not Storable) ............................................................................................................19
+6.4. Holding Register (Power Down Storage FRAM)...................................................................................19
+6.5. Holding Register (Power Down Storage RAM) .....................................................................................26
+7. Parameters and Addresses of S Series Gear Pump .......................................................................................26
+7.1. Input Register (Not Storable) ................................................................................................................26
+7.2. Table 4.2 Holding Register (Not Stored) ...............................................................................................27
+7.3. Table 4.3 Holding Register (Power-off Memory EEPROM) ..................................................................27
+8. Parameters and Addresses of F Series Gear Pump .......................................................................................28
+8.1. Table 4.2.1 Input Register (Not Stored) ................................................................................................28
+8.2. Input register (not stored) ......................................................................................................................29
+8.3. Holding Register (Not Stored) ...............................................................................................................30
+8.4. Holding Register (Power-off Memory FRAM) .......................................................................................30
+8.5. Holding Register (Power-off Memory RAM)..........................................................................................33
+9. Parameters and Addresses of Syringe Pump ..................................................................................................34
+9.1. Table 5.1. Input Register (not stored)....................................................................................................34
+9.2. Input Register (Not Stored) ...................................................................................................................36
+9.3. Holding Register (Not Stored) ...............................................................................................................36
+9.4. Holding Register (Power-off Memory FRAM) .......................................................................................36
+9.5. Holding Register (Power-off Memory RAM)..........................................................................................40
+10. RS485 hardware interface (DB15 pin) for Lead Fluid products ........................................................................41
+11.
+Example of Communication Protocol Data Frame .......................................................................................41
+11.1. Read Input Register ..............................................................................................................................41
+11.2. Read and Keep Registers .....................................................................................................................42
+11.3. Write Holding Register ..........................................................................................................................43
+11.4. Write Holding Register ..........................................................................................................................43
+11.5. Read holding register ............................................................................................................................44
+12.
+Appendix 1: Solution of hexadecimal to single-precision floating point number..........................................45
+13.
+Appendix 2: CRC Cyclic Redundancy Check ..............................................................................................46
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+3
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+1. Introduction
+The communication hardware interface of the LEADFLUID series products adopts RS485 and
+supports the MODBUS protocol. Through this protocol, it is convenient to form centralized
+monitoring and distributed control with various industrial equipment, and support various industrial
+controllers (including human-machine interfaces, industrial computers, computers, PLC, etc.). The
+program adopts modular design which is stable and reliable. This Modbus communication protocol
+stack includes two layers: the Modbus application layer protocol. Network layer. Our company's
+products are all transmitted in RTU mode.
+The currently supported instructions include (Red font instructions are used by the pump)
+Function
+Code
+
+Command Text
+
+Description
+
+0x01
+
+Read coil state
+
+Get the current state of a group of logic coils (ON/OFF)
+
+0x02
+
+Read input state
+
+Get the current state of a group of switch inputs (ON/OFF)
+
+0x03
+
+Read
+register
+
+holding
+
+Get the current binary value in one or more holding registers
+
+0x04
+
+Read
+register
+
+input
+
+Get the current binary value in one or more input registers
+
+0x05
+
+Write single coil
+
+Force the on-off state of a logic coil
+
+0x06
+
+Write a
+register
+
+single
+
+Load the specific binary value into a holding register
+
+0x0F
+
+Write multiple coils
+
+Force the on-off of a series of continuous logic coils
+
+0x10
+
+Write
+multiple
+registers
+
+Load specific binary values into a series of continuous holding
+registers
+
+0x11
+
+Report slave node
+ID
+
+Enables the host to judge the type of addressing slave and the state
+of the slave operation indicator
+
+0x17
+
+Read/write
+multiple registers
+
+Read and write multiple holding registers at the same time
+
+2. Modbus Protocol
+2.1. Modbus Protocol Model
+
+Query message from Master
+Device Address
+
+Device Address
+
+Function Code
+
+Function Code
+
+Eight-Bit
+Data Bytes
+
+Eight-Bit
+Data Bytes
+
+Error Check
+
+Error Check
+
+Response message from Slave
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+4
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+2.2. Format of Each Byte
+Coding system: 8-bit binary, hexadecimal 0-9, A-F
+Data bit: 1 start bit
+8-bit data, low bit sent first
+Even check 1 bit
+Stop bit 1 bit
+Error check area: cyclic redundancy check (CRC)
+
+2.3. Information Frame Format
+At the beginning of the message, a rest time of at least 3.5 characters is required. According to the baud rate used,
+it is easy to calculate the rest time (such as T1-T2-T3-T4 in the figure below). The data of the next area is the
+device address. The characters allowed in each zone are 0-9, A-F in hexadecimal. The equipment on the network
+continuously monitors the information on the network, including the rest time. When receiving the first address
+data, each device immediately decodes it to determine whether it is its own address. After the last word symbol is
+sent, there is also a rest time of 3.5 characters before a new message can be sent. The entire message must be
+sent continuously. If a rest time greater than 1.5 characters occurs during the transmission of frame information,
+the receiving device refreshes the incomplete information and assumes the next address data. A new message
+sent immediately after the same message (if there is no rest time of 3. 5 characters) will generate an error. This
+error is caused by the invalid CRC check code of the merged information.
+START
+
+ADDRESS
+
+FUNCTION
+
+DATA
+
+CRC CHECK
+
+END
+
+T1-T2-T3-T4
+
+8 BTI S
+
+8 BTI S
+
+n x 8 BTI S
+
+16 BIT S
+
+T1-T2-T3-T4
+
+RTU information frame
+
+2.3.1. Address Setting
+The information address includes 8 bits (RTU), the effective address range of slave device is 0-247, (decimal),
+and the address range of each slave device is 1-247. The master puts the slave address into the address area of
+the information frame and addresses the slave. When the slave responds, put its own address into the address
+area of the response information to let the host recognize the slave address that has responded. The address 0 is
+the broadcast address, which can be recognized by all slaves. When the Modbus protocol is used for advanced
+networks, broadcast or its alternative is not allowed. For example, Modbus+uses a token loop to automatically
+update the shared database.
+
+2.3.2. Function Code Setting
+The information frame function code includes 8 characters (RTU). Valid codes range from 1-225 (decimal). Some
+codes are applicable to all types of controllers, while some codes are only applicable to some types of controllers.
+There is some code left for future use. When the host sends information to the clause, the function code explains
+the action to be performed to the slave. For example, read the ON/OFF state of a group of discrete coils or input
+signals, read the data of a group of registers, read the diagnostic state of the slave, write the coils (or registers),
+and allow the program in the slave to be cut down, recorded, and confirmed. When the slave responds to the host,
+the function code can indicate that the slave responds normally or has an error (that is, abnormal response). When
+the slave responds normally, the clause simply returns the original function code. In case of abnormal response,
+the slave returns a code equal to the original code and sets the most significant bit to "1". For example, if the host
+requests to read a group of holding registers from the host, the function code of sending information is:
+
+0000 0011 (hex 03)
+If the slave receives the requested action information correctly, it returns the same code value as the normal
+response. When an error is found, an abnormal sound message is returned:
+
+1000 0011 (hex 83)
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+5
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+The slave modifies the function code. In addition, a special code is put into the data area of the response
+information to tell the host the error type and the reason for abnormal response. The application program of the
+host device is responsible for handling the abnormal response. The typical processing process is that the host
+sends the test and diagnosis of the information to the slave and notifies the operator.
+
+2.3.3. Content of Data Area
+The data area has two hexadecimal data bits and the data range is 00-FF (hexadecimal). According to the mode
+of network serial transmission, the data area can be composed of a pair of ASCII characters or a RTU character.
+The information data sent by the master to the slave device includes the request actions specified in the master
+function code executed by the slave, such as the address of the discrete register, the number of processing objects,
+and the actual number of data bytes. For example, if the host requests to read a set of registers from the machine
+(function code 03), the data specifies the starting address of the register and the number of registers. For another
+example, the host needs to write a set of registers in a slave (the function code is 10H). This data area specifies
+the starting address to be written to the register area, the number of registers, the number of bytes of data, and
+the data to be written to the register. If there is no error, the response information from the slave to the host contains
+the request data. If there is an error, there is an abnormal code in the data, and the host can judge and make the
+next action. The length of the data area can be "zero" to represent some kind of information, such as the
+communication event record (function code OBH) of the master request - slave response. At this time, the slave
+does not need other additional information, and the function code only specifies the action.
+
+2.3.4. Error Verification
+The standard Modbus bus has two types of error checking methods. The content of the error checking area is
+filled according to the error checking method used. The error check code is a 16-bit value and two 8-bit bytes. The
+error check value is the CRC check result of the message content. CRC check information frame is the last data.
+The obtained check code is sent to the low byte first, and then to the high byte, so the high byte of CRC code is
+the last transmitted information.
+
+2.4. Serial Transmission of Information
+In the information transmitted on the standard Modbus, each character or byte is transmitted in the order from
+left to right: least significant bit: (LSB) most significant bit: (MSB)
+With Parity Checking
+Start
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+Par
+
+Stop
+
+Stop
+
+Stop
+
+Without Parity Checking
+Start
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+3. Instructions for Using
+1)
+
+During the communication debugging process, first select a single word input register for testing, such
+as temperature and observe whether the read data matches the display to confirm whether
+communication is normal. If the data is consistently incorrect, you can try swapping the wiring sequence
+between A and B.
+The communication state of the LCD display is determined by the transmission and reception of
+communication data and is not physically connected.
+In this technical standard, if there are no special circumstances, it is recommended to use the default
+byte order CDAB (original communication mode: computer mode) for registers with long integers and
+floating-point numbers. In byte order ABCD (original communication mode: PLC mode), to ensure data
+correctness, only one instruction is allowed to read and write to a long integer or single precision floating-
+
+2)
+3)
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+6
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+point variable at a time. In this mode, if two or more single/double word registers are read and written
+continuously, error data will be generated.
+When communicating with devices, there should be a delay of more than 50ms between each instruction
+frame to ensure the integrity of communication data. Otherwise, it may cause data errors and
+communication abnormalities, especially in PLC programming and computer programming. Each
+instruction frame must be manually added
+When writing registers for flow and liquid volume, it is important to first write the unit before writing the
+value, otherwise it may cause unit abnormalities and prevent startup
+Modifying the pump number, communication rate, and check bit all require restarting the device to take
+effect
+
+4)
+
+5)
+6)
+
+4. Parameters and Addresses of S Series Peristaltic Pump
+Products: BQ50S, BQ80S, BT50S, BT102S, BT100S, BT300S, BT600S, BT101S, BT301S, BT601S, WT300S,
+WT600S, WT600S-65, WG600S, BT100S-1, BT103S
+Mode: RTU
+Address: 1-247 settable
+Communication rate: 9600
+Data bit: 8
+Check bit: even check (EVEN)
+Stop bit: 1
+
+4.1. Input Register (Not Storable)
+No.
+
+1
+
+2
+
+3
+
+4
+
+Address
+(Decimal)
+
+Name
+
+Function
+
+Data Range
+
+Data Type
+
+1000
+
+Reserved
+
+Nothing
+
+Unsigned
+Short int
+(2 bytes)
+
+1001
+
+Value of rotating
+speed timer
+
+The setting that
+determines current
+rotating speed
+
+200-65535
+
+Unsigned
+Short int
+(2 bytes)
+
+1002
+
+Subdivide
+number
+
+Step numbers for
+1 round
+
+BQ-S:6400
+BT-S V2:6400
+BT-S:10000
+
+Unsigned
+Short int
+(2 bytes)
+
+Speed setting
+controlled by
+external analog
+signal
+
+BQ-S:1-800
+BT100S/BT101
+S/BT100S-1:
+1-1500
+BT300S/BT301
+S:1-3500
+BT600S/BT601
+S:1-6000
+WT300S:30350
+WT600S/WG60
+
+Unsigned
+Short int
+(2 bytes)
+
+1003
+
+Analog speed
+control
+
+Remarks
+
+WT series
+is not
+displayed
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+7
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+0S:30-600
+
+5
+
+6
+
+1018
+
+Manufacturer
+information
+
+Display
+manufacturer
+information
+
+"Lead Fluid"
+
+Unsigned
+Char
+(10 bytes)
+
+1023
+
+Product
+information
+
+Display product
+information
+
+"BT100S"
+"BT300S"
+"BT600S"
+
+Unsigned
+Char
+(10 bytes)
+
+4.2. Holding Register (Not Storable)
+No.
+
+1
+
+2
+
+3
+
+Address
+(Decimal)
+
+Name
+
+Function
+
+3000
+
+3001
+
+3002
+
+Data Range
+
+Data Type
+
+Key value
+
+Modify key
+value
+
+0-8
+
+Unsigned
+Short int
+(2 bytes)
+
+Easy
+dispensing
+state
+
+Easy
+dispensing
+is on or not
+
+Normal: 0
+In dispensing: 1
+
+Unsigned
+Short int (2
+bytes)
+
+Current time
+dispensing
+state
+
+Check if
+the time
+dispensing
+running
+
+Remarks
+
+Suitable for BT-S series
+
+Unsigned
+Short int (2
+bytes)
+
+Normal: 0
+Dispensing: 1
+
+Suitable for BT-S V2
+series, BQ-S series,
+WT-S series, WG-S
+series. BT-S V2 series
+requires working mode
+set timing mode
+
+4.3. Holding Register (Power Down Can Store EEPROM)
+No.
+
+Address
+(Decimal)
+
+Name
+
+Function
+
+Data Range
+
+Data Type
+
+Remarks
+
+Unsigned
+Short int
+(2 bytes)
+
+Except for the WT
+series, the value
+of/10 for other
+series is the actual
+speed,
+corresponding to
+the following:
+BQ-S:0.1-80
+BT100S/BT101S
+/BT100S-1:
+0.1-150
+BT300S/BT301S:
+0.1-350
+BT600S/BT601S:
+0.1-600
+
+Unsigned
+Short int
+
+1
+
+2
+
+3100
+
+Rotating
+Speed
+
+Adjust rotating
+speed
+
+BQ-S:1-800
+BT100S/BT10
+1S/BT100S-1:
+1-1500
+BT300S/BT30
+1S:1-3500
+BT600S/BT60
+1S:1-6000
+WT300S:30350
+WT600S/WG
+600S:30-600
+
+3101
+
+Direction state
+
+Set rotation
+direction
+
+Clockwise: 0
+Anticlockwise:
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+8
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+3
+3102
+
+Running state
+
+Start/stop pump
+
+3103
+
+Full speed
+state
+
+Display full
+speed state
+
+4
+
+5
+
+1
+
+(2 bytes)
+
+Stop: 0
+Start: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+Normal: 0
+Full speed: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+Internal: 0
+External: 1
+Footswitch: 2
+Level: 3
+
+3104
+
+Control mode
+
+Set
+mode
+
+control
+
+Internal: 0
+External: 1
+Footswitch: 2
+Level: 3
+Communicate
+:4
+
+Unsigned
+Short int
+(2 bytes)
+
+Internal: 0
+External: 1
+Dispense: 2
+Level 1: 3
+Level 2: 4
+
+6
+3105
+
+Easy
+dispensing
+volume
+
+Set easy
+dispensing
+volume for one
+micro step
+
+3107
+
+Slave device
+address
+
+Unsigned
+Long
+int(4bytes)
+
+Set Slave
+device address
+
+1-247
+
+Unsigned
+Short int
+(2 bytes)
+
+3108
+
+MODBUS
+mode
+
+Switch
+MODBUS byte
+order
+
+CDAB
+（
+Original
+computer
+mode）
+：0
+ABCD
+（
+Original
+PLC mode）: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+3109
+
+Dispensing
+time
+
+Set dispensing
+time
+
+3110
+
+Interval time
+
+Interval time
+between two
+dispensing
+processes
+
+3111
+
+Cycles
+numbers
+
+Number of
+cycles
+
+8
+
+9
+
+10
+
+11
+
+Suitable for
+BT100S V2
+/BT300S V2
+/BT600S V2
+/BT100S-1 V2
+
+04294967295
+
+7
+
+1-9999
+
+Only suitable for
+BT101S/BT301S
+/BT601S/WG600S
+
+Unsigned
+Short int
+(2 bytes)
+
+Corresponding to
+0.1-999．9
+
+1-9999
+
+Unsigned
+Short int
+(2 bytes)
+
+Only suitable for
+BT-S V2, V3
+series,
+corresponding to
+0.1-999.9
+
+0-999
+
+Unsigned
+Short int
+
+Only suitable for
+BT-S V2, V3
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+9
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+12
+3112
+
+Maximum
+speed
+
+1-6000
+
+Unsigned
+Short int
+(2 bytes)
+
+Language
+
+Set language
+
+0: English
+1: Chinese
+
+Unsigned
+Short int
+(2 bytes)
+
+Only suitable for
+BT-S V2, V3
+series
+
+Beep
+
+Set the Beep to
+enable or
+disable
+
+0: Disable
+1: Enable
+
+Unsigned
+Short int
+(2 bytes)
+
+Only suitable for
+BT-S V2, V3
+series
+
+Lock
+
+Set keyboard
+lock on or off
+
+0: Unlock
+1: Lock
+
+Unsigned
+Short int
+(2 bytes)
+
+Only suitable for
+BT-S V2, V3
+series
+
+Unsigned
+Short int
+(2 bytes)
+
+Only suitable for
+BT-S V2, V3
+series
+
+Running time
+units do not
+include
+interval time
+units
+
+Only suitable for
+BT-S V3 series
+
+Only suitable for
+BT-S V2, V3
+series
+
+16
+3116
+
+Only suitable for
+BT-S V2, V3
+series
+
+Maximum
+speed
+corresponding
+to analog
+quantity
+
+15
+3115
+
+Unsigned
+Short int
+(2 bytes)
+
+Set reverse
+angle
+
+14
+3114
+
+series
+
+Reverse
+angle
+
+13
+3113
+
+(2 bytes)
+0-720
+
+17
+
+Time unit
+
+Unit of
+operation and
+interval time
+
+3118
+
+Contrast
+
+Set the contrast
+of LCD
+
+1-50
+
+Unsigned
+Short int
+(2 bytes)
+
+3124
+
+Acceleration
+time
+
+Set
+acceleration
+time
+
+1-20
+corresponds
+to 0.S-2.0S
+
+Unsigned
+Short int
+(2 bytes)
+
+Only suitable for
+BT-S V3 series
+
+3125
+
+Deceleration
+time
+
+Set
+deceleration
+time
+
+1-20
+corresponds
+to 0.S-2.0S
+
+Unsigned
+Short int
+(2 bytes)
+
+Only suitable for
+BT-S V3 series
+
+3126
+
+Step
+protection
+
+Disable/enable
+step protection
+
+0: Disable
+1: Enable
+
+Unsigned
+Short int
+(2 bytes)
+
+Only suitable for
+BT-S V3 series
+
+3127
+
+Interval time
+unit
+
+Unit of interval
+time
+
+0: Second
+1: Minute
+2: Hour
+
+Unsigned
+Short int
+(2 bytes)
+
+Only suitable for
+BT-S V3 series
+
+Set baud rate
+
+0: 4800
+1: 9600
+2: 19200
+3: 38400
+
+Unsigned
+Short int
+(2 bytes)
+
+3117
+
+18
+
+19
+20
+
+21
+
+22
+
+23
+
+24
+3128
+
+Baud rate
+
+0: Second
+1: Minute
+2: Hour
+
+Only suitable for
+BT-S V2, V3
+series
+
+Only suitable for
+BT-S V3 series
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+10
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+25
+3129
+
+Baud rate
+stop bit
+
+1: bit
+2: bit
+
+Unsigned
+Short int
+(2 bytes)
+
+Only suitable for
+BT-S V3 series
+
+3130
+
+Baud rate
+verification
+method
+
+0: No parity
+1: Odd check
+2: Even check
+
+Unsigned
+Short int
+(2 bytes)
+
+Only suitable for
+BT-S V3 series
+
+26
+
+5. Parameters and Addresses of L Series Peristaltic Pump
+Products: BT100L, BT300L, BT600L, BT101L, BT301L, BT601L
+Mode: RTU
+Address: 1-247 settable
+Communication rate: 4800,9600,19200,38400
+Data bit: 8
+Check bit: even check (EVEN)
+Stop bit: 1
+
+5.1. Input Register (Not Storable)
+No.
+
+1
+
+2
+
+3
+
+Address
+(Decimal)
+
+Name
+
+Function
+
+Data Range
+
+Data Type
+
+(1000)
+
+Internal
+temperature
+
+Check the
+temperature
+inside the
+pump
+
+-100-+100
+degrees
+
+Signed Short
+int
+(2 bytes)
+
+Remarks
+
+Unsigned
+Short int
+(2 bytes)
+
+(1001)
+
+Reserved
+
+（1002）
+
+Rotating
+speed
+
+Check current
+rotating speed
+
+BT10XL: 0.1-150
+BT30XL: 0.1-350
+BT60XL: 0.1-600
+
+Float
+(4 bytes)
+
+Check how
+many steps
+has run for
+current
+dispensing
+
+0-4294967295
+
+Unsigned
+Long int
+(4 bytes)
+
+0-4294967295
+
+Unsigned
+long int
+(4 bytes)
+
+4
+
+（1004）
+
+Steps has run
+for current
+dispensing
+
+5
+
+(1006)
+
+Required
+steps for one
+dispensing
+
+Check required
+steps for one
+dispensing
+
+6
+
+(1016)
+
+Value of
+rotating speed
+timer
+
+The setting that
+determines
+current rotating
+speed
+
+150-65535
+
+Unsigned
+Short int
+(2 bytes)
+
+7
+
+（1018）
+
+Manufacturer
+information
+
+Display
+manufacturer
+
+"Lead Fluid"
+
+Unsigned
+Char
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+11
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+information
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+Unsigned
+Char
+(10 bytes)
+
+（1023）
+
+Display product
+information
+
+（1028）
+
+Touch panel
+X-coordinate
+
+Display touch
+panel Xcoordinate
+
+Unsigned
+Short int
+(2 bytes)
+
+（1029）
+
+Touch panel
+Y-coordinate
+
+Display touch
+panel Ycoordinate
+
+Unsigned
+Short int
+(2 bytes)
+
+（1030）
+
+Analog speed
+
+Display analog
+input speed
+
+1032
+
+Accumulated
+liquid volume
+Checking
+
+Checking the
+cumulative
+liquid volume
+value
+
+1034
+
+Accumulated
+liquid volume
+unit checking
+
+Checking
+cumulative
+liquid volume
+unit
+
+Maximum
+speed of
+pump head
+
+Check the
+current
+maximum
+pump head
+speed
+
+Maximum flow
+rate
+
+Check the
+current
+maximum flow
+rate of the tube
+
+Minimum flow
+rate
+
+Check the
+current
+minimum flow
+rate of the tube
+
+1038
+
+16
+
+"BT100L"
+"BT300L"
+"BT600L"
+
+Product
+information
+
+1036
+
+15
+
+(10 bytes)
+
+1040
+
+BT10XL: 1-1500
+BT30XL: 1-3500
+BT60XL: 1-6000
+
+Unsigned
+Long int
+(4 bytes)
+
+Corresponding value
+BT10XL: 0.1-150
+BT30XL: 0.1-350
+BT60XL: 0.1-600
+
+Float
+(4 bytes)
+
+uL: 1
+mL: 2
+L: 3
+
+Unsigned
+Short int
+(2 bytes)
+
+Unsigned
+Short int
+(2 bytes)
+
+Unit: rpm
+
+Suitable for BT-L V1
+software version 1.28
+and above BT-L V2
+
+Float
+(4 bytes)
+
+Suitable for BT-L V1
+software version 1.28
+and above BT-L V2
+
+Unit: uL
+
+Float
+(4 bytes)
+
+Suitable for BT-L V1
+software version 1.28
+and above BT-L V2
+
+Remarks
+
+Unit: uL
+
+5.2. Input Register (Not Storable)
+No.
+
+1
+
+2
+
+Address
+(Decimal)
+
+Name
+
+Function
+
+Data Range
+
+Data Type
+
+(2800)
+
+On time
+
+Check total
+startup time
+
+0-4294967295
+Unit: second
+
+Unsigned
+Long int
+(4 bytes)
+
+(2802)
+
+Working
+time
+
+Check total
+working time
+
+0-4294967295
+Unit: second
+
+Unsigned
+Long int
+(4 bytes)
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+12
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+3
+
+(2804)
+
+Check how
+many times the
+pump powered
+on
+
+Number of
+powered on
+times
+
+0-4294967295
+
+Unsigned
+Long int
+(4 bytes)
+
+Data Range
+
+Data Type
+
+5.3. Holding Register (Not Storable)
+No.
+
+Address
+(Decimal)
+
+Name
+
+Function
+
+3000
+
+Switch
+checking
+screen
+
+Switch checking
+screen
+
+1
+
+Remarks
+
+Unsigned
+Short int
+(2 bytes)
+
+Page 1: 0
+Page 2: 1
+
+5.4. Holding Register (Power Down Storage FRAM)
+No.
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+Address
+(Decimal)
+
+Name
+
+Function
+
+4000
+
+The leftmost
+physical value of
+touch screen
+
+The leftmost
+physical value
+of touch screen
+
+Unsigned
+Long int
+(4 bytes)
+
+4002
+
+The rightmost
+physical value of
+touch screen
+
+The rightmost
+physical value
+of touch screen
+
+Unsigned
+Long int
+(4 bytes)
+
+4004
+
+The uppermost
+physical value of
+touch screen
+
+The uppermost
+physical value
+of touch screen
+
+Unsigned
+Long int
+(4 bytes)
+
+4006
+
+The down most
+physical value of
+touch screen
+
+The down most
+physical
+coordinate of
+touch screen
+
+Unsigned
+Long int
+(4 bytes)
+
+4015
+
+Flow rate in the
+flow mode
+
+Set the flow
+rate in the flow
+mode
+
+0.001-999.9
+
+Float (4
+bytes)
+
+Working mode
+
+Set different
+working modes
+
+Flow: 0
+Time: 1
+
+Unsigned
+Short int
+(2 bytes)
+Unsigned
+Short int
+(2 bytes)
+
+4017
+
+7
+
+8
+
+Data Range
+
+Data
+Type
+
+4018
+
+Keypad tone
+
+Tone on/off
+
+Tone on: 1
+Tone off:0
+
+4019
+
+Parameter
+locking
+
+Set parameter
+locking
+
+Unlock: 0
+Lock: 1
+
+Unsigned
+Short int
+(2 bytes)
+Unsigned
+Short int
+(2 bytes)
+Unsigned
+Short int
+
+9
+
+4020
+
+Language
+
+Set language
+
+Chinese: 0
+English: 1
+
+10
+
+4021
+
+Pump head and
+tube model
+
+Set unified
+numbering for
+
+0-64
+
+Remarks
+
+Suitable for BT-L
+V2, V3 series
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+13
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+pump head and
+tube models
+
+(2 bytes)
+
+Direction state
+
+Set rotation
+direction
+
+Clockwise: 0
+Anticlockwise: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+Full speed state
+
+Indicates
+whether it is at
+full speed
+(cleaning)
+
+Normal: 0
+Full speed: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+Dispensing state
+
+Start to
+dispense
+
+Stop: 0
+Running: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+External control
+mode
+
+Set external
+control mode
+
+Internal: 0
+Foot switch: 1
+Current: 2
+Voltage: 3
+
+Unsigned
+Short int
+(2 bytes)
+
+Reverse angle
+
+Set reverse
+angle
+
+0-720
+
+Unsigned
+Short int
+(2 bytes)
+
+Slave address
+
+Set the slave
+address for
+communication
+
+1-247
+
+Unsigned
+Short int
+(2 bytes)
+
+Communication
+baud rate
+
+Set the number
+of
+communication
+baud rate
+
+4800bbs: 0
+9600bbs: 1
+19200bbs:2
+38400bbs: 3
+
+Unsigned
+Short int
+(2 bytes)
+
+External control
+method
+
+Set the method
+of external
+control
+triggering start
+stop
+
+Pulse: 0
+Level: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+Infrared enable
+
+Turn infrared
+function on or
+off
+
+Disable: 0
+Enable: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+4032
+
+Time
+dispensing
+volume
+
+Set the number
+of microsteps
+for time
+dispensing
+volume
+
+21
+
+4034
+
+Restore default
+values
+
+Set default
+values
+
+22
+
+4035
+
+Discharge
+Coefficient
+
+23
+
+4126
+
+Running state
+
+11
+
+4023
+
+12
+
+4024
+
+13
+
+4025
+
+14
+
+4026
+
+15
+
+4027
+
+16
+
+4028
+
+17
+
+4029
+
+18
+
+4030
+
+19
+
+4031
+
+20
+
+Control start
+stop in flow
+
+0-4294967295
+
+Unsigned
+Long int
+(4 bytes)
+
+Restore: 55
+Normal: 170
+
+Unsigned
+Short int
+(2 bytes)
+
+0.1-99999
+
+Float (4
+bytes)
+
+Stop: 0
+Start: 1
+
+Unsigned
+Short int
+
+Suitable for BT-L V1
+series
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+14
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+mode, check
+whether to run
+or stop in
+dispensing
+mode
+
+24
+
+4127
+
+MODBUS mode
+
+Switch
+MODBUS bytes
+order
+
+(2 bytes)
+
+CDAB（Original
+computer
+mode） ：0
+ABCD（Original
+PLC
+mode）
+：
+1
+
+Unsigned
+Short int
+(2 bytes)
+
+25
+
+Time dispensing
+data structure
+
+Set time
+dispensing
+parameters
+
+Communication
+check bit
+
+Set
+communication
+verification
+method
+
+4257
+
+LCD backlight
+
+Set the
+brightness of
+the LCD
+backlight
+
+30
+
+4258
+
+Hours of timed
+start
+
+31
+
+4259
+
+Minutes of timed
+
+26
+
+4168
+
+(416 8+6 × N)
+flow 4bytes
+floating point
+(4170+6) × N)
+running time 2
+bytes unsigned
+(4171+6) × N)
+downtime 2
+bytes unsigned
+(4172+6) × N)
+2nd byte
+unsigned
+(4173+6) × N)
+flow unit 2 bytes
+unsigned
+(uL/min=1,
+mL/min=2,
+L/min=3)
+
+Suitable for BT-L
+V2,V3 series
+
+12 * 5
+bytes, 30
+words,
+N=0-4, a
+total of
+five sets
+of data
+
+27
+28
+
+4256
+
+29
+
+No parity: 0
+Odd check: 1
+Even parity
+check: 2
+
+Unsigned
+Short int
+(2 bytes)
+
+0-100
+
+Unsigned
+Short int
+(2 bytes)
+
+Set the hourly
+value for timed
+start in flow
+mode
+
+0-999 hour
+
+Unsigned
+Short int
+(2 bytes)
+
+Set the minute
+
+0-59 minute
+
+Unsigned
+
+Suitable for BT-L
+V2, V3 series
+
+Suitable for BT-L
+V2, V3 series
+
+Suitable for BT-L V2,
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+15
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+start
+
+value for timed
+start in flow
+mode
+
+Short int
+(2 bytes)
+
+V3 series
+
+Seconds of timed
+start
+
+Set the second
+value for timed
+start in flow
+mode
+
+Hours of timed
+stop
+
+Set the hourly
+value for timed
+start in flow
+mode
+
+Minutes of timed
+stop
+
+Set the minute
+value for timed
+start in flow
+mode
+
+Seconds of timed
+stop
+
+Set the second
+value for timed
+start in flow
+mode
+
+4265
+
+Interval time unit
+
+Set interval
+time units for
+time dispensing
+and liquid
+volume
+dispensing
+
+Second: 0
+Minute: 1
+Hour: 2
+
+Unsigned
+Short int
+(2 bytes)
+
+4267
+
+Analog speed of
+0V
+
+Speed at 0V
+analog
+
+Value /10
+Unit: rpm
+
+Unsigned
+Short int
+(2 bytes)
+
+Suitable for BT-L V2,
+V3 series
+
+4268
+
+Analog speed of
+5V
+
+Speed at 5V
+analog
+
+Value /10
+Unit: rpm
+
+Unsigned
+Short int
+(2 bytes)
+
+Suitable for BT-L V2,
+V3 series
+
+4269
+
+Analog speed of
+4mA
+
+Speed at 4mA
+analog
+
+Value /10
+Unit: rpm
+
+Unsigned
+Short int
+(2 bytes)
+
+Suitable for BT-L V2,
+V3 series
+
+4270
+
+Analog speed of
+20mA
+
+Speed at 20mA
+analog
+
+Value /10
+Unit: rpm
+
+Unsigned
+Short int
+(2 bytes)
+
+Suitable for BT-L V2,
+V3 series
+
+4271
+
+External control
+direction control
+signal
+
+External control
+signal triggering
+direction control
+method
+
+Pulse: 0
+Level: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+42
+
+4272
+
+Pulse control
+signal
+
+Pulse control
+method
+
+Descending
+edge: 0
+Rising edge: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+Suitable for BT-L V2,
+V3 series
+
+43
+
+4273
+
+Level control
+signal
+
+Level control
+method
+
+Low level: 0
+High level: 1
+
+Unsigned
+Short int
+
+Suitable for BT-L V2,
+V3 series
+
+32
+
+4260
+
+33
+
+4261
+
+34
+
+4262
+
+35
+
+4263
+
+36
+
+37
+
+38
+
+39
+
+40
+
+41
+
+0-59 second
+
+Unsigned
+Short int
+(2 bytes)
+
+0-999 hour
+
+Unsigned
+Short int
+(2 bytes)
+
+0-59 minute
+
+Unsigned
+Short int
+(2 bytes)
+
+0-59 second
+
+Unsigned
+Short int
+(2 bytes)
+
+Suitable for BT-L V2,
+V3 series
+
+Suitable for BT-L V2,
+V3 series
+
+Suitable for BT-L V2,
+V3 series
+
+Suitable for BT-L V2,
+V3 series
+
+Suitable for BT-L V2,
+V3 series
+
+Suitable for BT-L V2,
+V3 series
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+16
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+(2 bytes)
+
+5.5. Holding Register (Power Down Storage RAM)
+No.
+
+1
+
+2
+
+Address
+
+Name
+
+Function
+
+4800
+
+Total
+number of
+running
+times
+
+Record cumulative
+times
+
+4802
+
+Total
+number of
+running
+steps
+
+Record the
+cumulative steps
+(equivalent to the
+cumulative liquid
+volume)
+
+Data Range
+
+Data Type
+
+0- 4294967295
+
+UnSigned
+Long int
+(4 bytes)
+
+0- 4294967295
+
+Unsigned
+Long int
+(4 bytes)
+
+Remarks
+
+Clearing it to zero
+can achieve the
+resetting of
+accumulated liquid
+volume
+
+6. Parameters and Addresses of F Series Peristaltic Pump
+Products: BT100F, BT300F, BT600F, BT101F, BT301F, BT601F, BT100F-1, WT300F, WT600F, WG600F
+Mode: RTU
+Address: 1-247 settable
+Communication rate: 4800,9600,19200,38400
+Data bit: 8
+Check bit: even check (EVEN)
+Stop bit: 1
+
+6.1. Input Register (Not Storable)
+No.
+
+1
+
+2
+
+Address
+(Decimal)
+
+Name
+
+Function
+
+Data Range
+
+Data Type
+
+(1000)
+
+Internal
+temperature
+
+Check the
+temperature
+inside the pump
+
+-100-+100
+degrees
+
+Signed Short
+int
+(2 bytes)
+Unsigned
+Short int
+(2 bytes)
+
+(1001)
+
+Reserved
+
+（1002）
+
+Rotating
+speed
+
+Check current
+rotating speed
+
+（1004）
+
+Current
+running steps
+
+Check the
+current number
+of running steps
+
+5
+
+(1006)
+
+Required
+number
+of
+running steps
+
+6
+
+（1008）
+
+Current
+
+3
+
+4
+
+Remarks
+
+BT10XF 0.1-150
+BT30XF 0.1-350
+BT60XF 0.1-600
+
+Float
+(4 bytes)
+
+0-4294967295
+
+Unsigned
+Long int
+(4 bytes)
+
+Check required
+number of
+running steps
+
+0-4294967295
+
+Unsigned
+long int
+(4 bytes)
+
+Check current
+
+0-4294967295
+
+Unsigned
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+17
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+dispensing
+time
+
+dispensing time
+
+long int
+(4 bytes)
+
+Check current
+dispensing
+volume
+
+0-4294967295
+
+Unsigned
+Long int
+(4 bytes)
+
+0-4294967295
+
+Unsigned
+Long int
+(4 bytes)
+
+150-65535
+
+Unsigned
+Short int
+(2 bytes)
+
+7
+
+（1010）
+
+Current
+dispensing
+volume
+
+8
+
+(1012)
+
+Current
+dispensing
+times
+
+Check current
+dispensing times
+
+(1016)
+
+Value of
+rotating
+speed timer
+
+The setting that
+determines
+current rotating
+speed
+
+（1018）
+
+Manufacturer
+information
+
+Display
+manufacturer
+information
+
+"LeadFluid"
+
+Unsigned
+Char
+(10 bytes)
+
+（1023）
+
+Product
+information
+
+Display product
+information
+
+"BT100F"
+"BT300F"
+"BT600F"
+
+Unsigned
+Char
+(10 bytes)
+
+（1028）
+
+Touch panel
+X-coordinate
+
+Display touch
+panel Xcoordinate
+
+Unsigned
+Short int
+(2 bytes)
+
+（1029）
+
+Touch panel
+Y-coordinate
+
+Display touch
+panel Ycoordinate
+
+Unsigned
+Short int
+(2 bytes)
+
+9
+10
+11
+
+12
+
+13
+
+14
+
+15
+
+（1030）
+
+Analog speed
+control
+
+Display analog
+input speed
+
+1032
+
+Accumulated
+liquid volume
+checking
+
+Checking the
+cumulative liquid
+volume value
+
+1034
+
+Accumulated
+liquid volume
+unit checking
+
+Checking
+cumulative liquid
+volume unit
+
+1036
+
+Maximum
+speed of
+pump head
+
+Check the
+current
+maximum pump
+head speed
+
+20
+
+1038
+
+maximum flow
+rate
+
+21
+
+1040
+
+Minimum flow
+rate
+
+16
+
+17
+
+18
+
+19
+
+BT10XF: 1-1500
+BT30XF: 1-3500
+BT60XF: 1-6000
+
+Unsigned
+Long int
+(4 bytes)
+
+Corresponding value
+BT10XF: 0.1-150
+BT30XF: 0.1-350
+BT60XF: 0.1-600
+
+Float (4
+bytes)
+uL: 1
+mL: 2
+L: 3
+
+Unsigned
+Short int
+(2 bytes)
+
+Unit: rpm
+
+Unsigned
+Short int
+(2 bytes)
+
+Check the
+current
+maximum flow
+rate of the tube
+
+Unit: uL
+
+Float (4
+bytes)
+
+Suitable for BT-F V1
+software version 1.28
+or above BT-L V2, V3
+
+Check the
+current minimum
+
+Unit: uL
+
+Float (4
+bytes)
+
+Suitable for BT-F V1
+software version 1.28
+
+Suitable for BT-F V1
+software version 1.28
+or above BT-L V2, V3
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+18
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+flow rate of the
+tube
+
+or above BT-L V2, V3
+
+6.2. Input Register (Not Storable)
+No.
+
+1
+
+2
+
+3
+
+Address
+(Decimal)
+
+Name
+
+Function
+
+Data Range
+
+Data Type
+
+(2800)
+
+On time
+
+Check total startup
+time
+
+0-4294967295
+Unit: second
+
+Unsigned
+Long int
+(4 bytes)
+
+(2802)
+
+Working
+time
+
+Check total
+working time
+
+0-4294967295
+Unit: second
+
+Unsigned
+Long int
+(4 bytes)
+
+(2804)
+
+Number of
+powered
+on times
+
+Check how many
+times the pump
+powered on
+
+0-4294967295
+
+Unsigned
+Long int
+(4 bytes)
+
+Data Range
+
+Data Type
+
+Remarks
+
+6.3. Holding Register (Not Storable)
+No.
+
+Address
+(Decimal)
+
+Name
+
+Function
+
+3000
+
+Switch
+checking
+screen
+
+Switch checking
+screen
+
+1
+
+Remarks
+
+Unsigned
+Short int
+bytes)
+
+Page 1: 0
+Page 2: 1
+
+6.4. Holding Register (Power Down Storage FRAM)
+No.
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+Address
+(Decimal)
+
+Name
+
+Function
+
+4000
+
+The leftmost
+physical value
+of touch screen
+
+The leftmost
+physical value
+of touch screen
+
+Unsigned
+Long int
+(4 bytes)
+
+4002
+
+The rightmost
+physical value
+of touch screen
+
+The rightmost
+physical value
+of touch screen
+
+Unsigned
+Long int
+(4 bytes)
+
+4004
+
+The uppermost
+physical value
+of touch screen
+
+The uppermost
+physical value
+of touch screen
+
+Unsigned
+Long int
+(4 bytes)
+
+4006
+
+The down most
+physical value
+of touch screen
+
+The down most
+physical value
+of touch screen
+
+Unsigned
+Long int
+(4 bytes)
+
+4015
+
+Flow rate in the
+flow mode
+
+Set the flow
+rate in the flow
+mode
+
+0.001-999.9
+
+Float (4
+bytes)
+
+Working mode
+
+Set different
+working modes
+
+Flow: 0
+Liquid volume
+dispensing: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+4017
+
+Data Range
+
+Data Type
+
+Remarks
+
+V2 is a loop
+dispensing: 3
+V3 is programming
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+19
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+Time dispensing: 2
+Copy: 3
+
+7
+
+8
+
+9
+
+4018
+
+Keypad tone
+
+Tone on/off
+
+Tone on: 1
+Tone off: 0
+
+Unsigned
+Short int
+(2 bytes)
+
+4019
+
+Parameter
+locking
+
+Set parameter
+locking
+
+Unlock: 0
+Lock: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+Language
+
+Set language
+
+Chinese: 0
+English: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+Pump head and
+tube model
+
+Set unified
+numbering for
+pump head and
+tube models
+
+0-20
+
+Unsigned
+Short int
+(2 bytes)
+
+Flow unit
+
+Set flow unit
+
+ul/min: 1
+ml/min: 2
+L/min: 3
+
+Unsigned
+Short int
+(2 bytes)
+
+Direction state
+
+Set rotation
+direction
+
+Clockwise: 0
+Anticlockwise: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+4024
+
+Full speed state
+
+Indicates
+whether it is at
+full speed
+(cleaning)
+
+Normal: 0
+Full speed: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+4025
+
+Dispensing
+state
+
+Start to
+dispense
+
+Stop: 0
+Running: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+External control
+mode
+
+Set external
+control mode
+
+Internal control: 0
+Foot switch: 1
+Current: 2
+Voltage: 3
+
+Unsigned
+Short int
+(2 bytes)
+
+0-720
+
+Unsigned
+Short int
+(2 bytes)
+Unsigned
+Short int
+(2 bytes)
+
+4020
+
+10
+
+4021
+
+11
+
+4022
+
+12
+
+4023
+
+13
+
+14
+
+15
+
+4026
+
+16
+
+4027
+
+Reverse angle
+
+Set reverse
+angle
+
+17
+
+4028
+
+Slave address
+
+Set the slave
+address for
+communication
+
+1-247
+
+4029
+
+Communication
+baud rate
+
+Set the number
+of
+communication
+baud rate
+
+4800bbs
+9600bbs
+19200bbs
+38400bbs
+
+4030
+
+External control
+method
+
+Set the method
+of external
+control
+
+18
+
+19
+
+mode: 3
+
+0
+1
+2
+3
+
+Pulse: 0
+Level: 1
+
+Unsigned
+Short int
+(2 bytes)
+Unsigned
+Short int
+(2 bytes)
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+20
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+triggering start
+stop
+
+20
+
+4031
+
+Infrared enable
+
+Turn infrared
+function on or
+off
+
+21
+
+4034
+
+Restore default
+values
+
+Set default
+values
+
+22
+
+4035
+
+Discharge
+Coefficient
+
+23
+
+4126
+
+24
+
+4127
+
+25
+
+4128
+
+Running state
+
+MODBUS
+mode
+
+Liquid volume
+dispensing data
+structure
+
+Disable: 0
+Enable: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+Restore: 55
+Normal: 170
+
+Unsigned
+Short int
+(2 bytes)
+
+0.1-99999
+
+Float (4
+bytes)
+
+Control start
+stop in flow
+mode, check
+whether to run
+or stop in
+dispensing
+mode
+
+Stop: 0
+Start: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+Switch
+MODBUS bytes
+order
+
+CDAB （ Original
+computer mode） :
+0
+ABCD （ Original
+PLC mode）: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+Set liquid
+volume
+dispensing
+parameters
+
+(4128+8 × N) Flow
+4 bytes floating
+point
+(4130+8) × N)
+Liquid volume 4
+bytes floating point
+(4132+8) × N)
+Downtime 2 bytes
+unsigned
+(4133+8) × N) 2nd
+byte unsigned
+(4134+8) × N) The
+unit
+of
+liquid
+volume is 2 bytes,
+unsigned (1 in
+microliters, 2 in
+milliliters, and 3 in
+liters)
+(4135+8) × N) Flow
+unit
+2
+bytes
+unsigned
+(uL/min=1,
+mL/min=2,
+L/min=3)
+
+16*5 bytes
+40 words
+N=0-4, a
+total of five
+sets of
+data
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+21
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+26
+
+4168
+
+27
+
+4198
+
+28
+
+4256
+
+Time
+dispensing data
+structure
+
+Set time
+dispensing
+parameters
+
+(416 8+6 × N)
+Flow 4 bytes
+floating point
+(4170+6) × N)
+Running time 2
+bytes unsigned
+(4171+6) × N)
+Downtime 2 bytes
+unsigned
+(4172+6) × N) 2nd
+byte unsigned
+(4173+6) × N)
+Flow unit 2 bytes
+unsigned
+(uL/min=1,
+mL/min=2,
+L/min=3)
+
+Copy
+dispensing data
+structure
+
+Set replication
+dispensing
+parameters
+
+(4198+8) × N)
+Flow 4 bytes
+floating point
+(4200+8 × N) Total
+liquid volume 4
+bytes floating point
+(4202+8 × N)
+Downtime 2 bytes
+unsigned
+(4203+8 × N) 2nd
+byte unsigned
+(4204+8 × N) The
+unit of total liquid
+volume is 2 bytes,
+unsigned (1 in
+microliters, 2 in
+milliliters, and 3 in
+liters)
+(4205+8 × N) Flow
+unit 2 bytes
+unsigned
+(uL/min=1,
+mL/min=2,
+L/min=3)
+
+Communication
+check bit
+
+Set
+communication
+verification
+method
+
+No parity: 0
+Odd check: 1
+Even parity check:
+2
+
+12 * 5
+bytes, 30
+words,
+N=0-4, a
+total of five
+sets of
+data
+
+Suitable for BT-F V1
+series
+
+16*5 bytes
+40 words
+N=0-4, a
+total of five
+sets of
+data
+
+Unsigned
+Short int
+(2 bytes)
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+22
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+29
+
+LCD backlight
+
+Set the
+brightness of
+the LCD
+backlight
+
+Hours of timed
+start
+
+Set the hourly
+value for timed
+start in flow
+mode
+
+Minutes of
+timed start
+
+Set the minute
+value for timed
+start in flow
+mode
+
+Seconds of
+timed start
+
+Set the second
+value for timed
+start in flow
+mode
+
+Hours of timed
+stop
+
+Set the hourly
+value for timed
+start in flow
+mode
+
+Minutes of
+timed stop
+
+Set the minute
+value for timed
+start in flow
+mode
+
+Seconds of
+timed stop
+
+Set the second
+value for timed
+start in flow
+mode
+
+4265
+
+Interval time
+unit
+
+Set interval
+time units for
+time dispensing
+and liquid
+volume
+dispensing
+
+Second: 0
+Minute: 1
+Hour: 2
+
+Unsigned
+Short int
+(2 bytes)
+
+4267
+
+Analog speed
+of 0V
+
+Speed at 0V
+analog
+
+Value /10
+Unit: rpm
+
+Unsigned
+Short int
+(2 bytes)
+
+Suitable for BT-F
+V2, V3 series
+
+4268
+
+Analog speed
+of 5V
+
+Speed at 5V
+analog
+
+Value /10
+Unit: rpm
+
+Unsigned
+Short int
+(2 bytes)
+
+Suitable for BT-F
+V2, V3 series
+
+4269
+
+Analog speed
+of 4mA
+
+Speed at 4mA
+analog
+
+Value /10
+Unit: rpm
+
+Unsigned
+Short int
+(2 bytes)
+
+Suitable for BT-F
+V2, V3 series
+
+4270
+
+Analog speed
+of 20mA
+
+Speed at 20mA
+analog
+
+Value /10
+Unit: rpm
+
+Unsigned
+Short int
+(2 bytes)
+
+Suitable for BT-F
+V2, V3 series
+
+4257
+
+30
+
+4258
+
+31
+
+4259
+
+32
+
+4260
+
+33
+
+4261
+
+34
+
+4262
+
+35
+
+4263
+
+36
+
+37
+
+38
+
+39
+
+40
+
+0-100
+
+Unsigned
+Short int
+(2 bytes)
+
+0-999 hour
+
+Unsigned
+Short int
+(2 bytes)
+
+0-59 minute
+
+Unsigned
+Short int
+(2 bytes)
+
+0-59 second
+
+Unsigned
+Short int
+(2 bytes)
+
+0-999 hour
+
+Unsigned
+Short int
+(2 bytes)
+
+0-59 minute
+
+Unsigned
+Short int
+(2 bytes)
+
+0-59 second
+
+Unsigned
+Short int
+(2 bytes)
+
+Suitable for BT-F
+V2, V3 series
+
+Suitable for BT-F
+V2, V3 series
+
+Suitable for BT-F
+V2, V3 series
+
+Suitable for BT-F
+V2, V3 series
+
+Suitable for BT-F
+V2, V3 series
+
+Suitable for BT-F
+V2, V3 series
+
+Suitable for BT-F
+V2, V3 series
+
+Suitable for BT-F
+V2, V3 series
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+23
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+41
+
+42
+
+43
+
+44
+
+4271
+
+External control
+direction control
+signal
+
+External control
+signal triggering
+direction control
+method
+
+Pulse: 0
+Level: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+4272
+
+Pulse control
+signal
+
+Pulse control
+method
+
+Descending edge:
+0
+Rising edge: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+Suitable for BT-F
+V2, V3 series
+
+4273
+
+Level control
+signal
+
+Level control
+method
+
+Low level: 0
+High level: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+Suitable for BT-F
+V2, V3 series
+
+Transfer mode
+
+Flow transfer
+mode
+
+Flow mode: 0
+Time mode: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+Suitable for BT-F V3
+series
+
+4276
+
+Flow unit
+
+The unit of
+transmitted
+liquid volume
+
+Volume unit: 0
+Weight unit: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+Suitable for BT-F V3
+series
+
+4277
+
+Locked rotor
+alarm
+
+Locked rotor
+alarm
+development
+
+Close: 0
+Open: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+Suitable for BT-F V3
+series
+
+4278
+
+Dispensing
+completion
+alarm
+
+Set dispensing
+alarm values
+
+50-100
+(APP pushes an
+alarm when the
+dispensing
+progress reaches
+the set value)
+
+Unsigned
+Short int
+(2 bytes)
+
+4297
+
+Overall steps of
+circular
+dispensing
+
+How many
+steps are there
+under cyclic
+dispensing
+
+1-30
+
+Unsigned
+Short int
+(2 bytes)
+
+4298
+
+Total number of
+cycles
+
+The total
+number of
+cycles under
+cyclic
+dispensing
+
+4299
+
+Display the
+current
+parameters
+
+4275
+
+45
+
+46
+
+47
+
+Suitable for BT-F
+V2, V3 series
+
+Suitable for BT-F V3
+series
+
+48
+49
+
+50
+
+51
+
+52
+
+4300
+
+Programming
+mode data
+structure
+
+0-999
+
+Unsigned
+Short int
+(2 bytes)
+
+Which
+step's
+parameters are
+displayed
+on
+the LCD
+
+1-30
+
+Unsigned
+Short int
+(2 bytes)
+
+Set
+programming
+mode data
+parameters
+
+(4300+10 × N) flow
+4 bytes floating
+point
+(4302+10 × N)
+liquid volume 4
+bytes floating point
+(4304+10 × N)
+
+20 * 30
+bytes, 300
+words,
+N=0-29, a
+total of 30
+sets of
+data
+
+Suitable for BT-F
+V2, V3 series
+
+Suitable for BT-F
+V2, V3 series
+
+Suitable for BT-F
+V2, V3 series
+
+Suitable for BT-F
+V2, V3 series
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+24
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+Unsigned interval
+of 2 bytes
+(4305+10 × N)
+number of cycles 2
+bytes unsigned
+(4306+10 × N)
+liquid volume unit 2
+bytes, unsigned (1
+in microliters, 2 in
+milliliters, and 3 in
+liters)
+(4307+10 × N)
+flow unit 2 bytes
+unsigned
+(uL/min=1,
+mL/min=2,
+L/min=3)
+(4308+10 × N)
+interval unit 2 bytes
+unsigned (seconds
+are 0, minutes are
+1, and hours are 2)
+(4309+10 × N)
+rotation direction 2
+bytes unsigned (0
+clockwise,
+1
+counterclockwise)
+
+53
+
+4600
+
+54
+
+4610
+
+Time
+dispensing data
+structure
+(Supplementary
+4168)
+
+Liquid volume
+dispensing data
+structure
+(Supplementary
+4128)
+
+Set time
+dispensing
+parameters
+
+(4600+2 × N) time
+running time unit 2
+bytes unsigned
+(4601+2
+× N)
+downtime unit 2
+bytes unsigned
+(seconds are 0,
+minutes are 1, and
+hours are 2)
+
+Set liquid
+volume
+dispensing
+parameters
+
+(4610+4
+× N)
+running time 4
+bytes floating point
+(4130+4
+× N)
+running time unit 2
+bytes unsigned
+(4132+3) × N)
+downtime unit 2
+bytes unsigned
+(seconds are 0,
+
+4 * 5 bytes,
+10 words,
+N=0-4, a
+total of five
+sets of
+data
+
+Suitable for BT-F
+V2, V3 series
+
+Suitable for BT-F
+V2, V3 series
+8*5 bytes
+words,
+N=0-4, a
+total of five
+sets of
+data
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+25
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+minutes are 1, and
+hours are 2)
+
+55
+
+4630
+
+Programming
+mode data
+structure
+(Supplementary
+4300)
+
+Set
+programming
+mode and
+parameters
+
+(4630+3) × N)
+running time 4
+bytes floating point
+(4630+3) × N)
+running time unit 2
+bytes unsigned
+(seconds are 0,
+minutes are 1, and
+hours are 2)
+
+6 * 30
+bytes, 90
+words,
+N=0-29, a
+total of 30
+sets of
+data
+
+Suitable for BT-F
+V2, V3 series
+
+56
+57
+58
+59
+60
+
+6.5. Holding Register (Power Down Storage RAM)
+No.
+
+1
+
+2
+
+Address
+
+Name
+
+Function
+
+4800
+
+Total
+number of
+running
+times
+
+Record cumulative
+times
+
+4802
+
+Total
+number of
+running
+steps
+
+Record the
+cumulative steps
+(equivalent to the
+cumulative liquid
+volume)
+
+Data Range
+
+Data Type
+
+0- 4294967295
+
+UnSigned
+Long int
+(4 bytes)
+
+0- 4294967295
+
+Unsigned
+Long int
+(4 bytes)
+
+Remarks
+
+7. Parameters and Addresses of S Series Gear Pump
+Products：CT3000S, CT3001
+Mode: RTU
+Addresses: 1-247 (User Defined)
+Baud Rate: 9600
+Data Bits: 8
+CRC: Even Parity
+Stop Bit: 1
+
+7.1. Input Register (Not Storable)
+No.
+
+Address
+(Decimal)
+
+Name
+
+1
+
+1000
+
+Reserved
+
+Function
+
+Data Range
+
+Data Type
+Unsigned
+Short int
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+26
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+(2 bytes)
+
+2
+
+3
+
+4
+
+5
+
+1001
+
+Value of
+rotating speed
+timer
+
+The setting that
+determines
+current rotating
+speed
+
+1003
+
+Analog speed
+control
+
+Speed setting
+controlled by
+external analog
+signal
+
+1018
+
+Manufacturer
+information
+
+1023
+
+Product
+information
+
+99-998
+
+Unsigned
+Short int
+(2 bytes)
+
+300-3000rpm
+
+Unsigned
+Short int
+(2 bytes)
+
+Display
+manufacturer
+information
+
+"LeadFluid"
+
+Unsigned
+Char
+(10 bytes)
+
+Display product
+information
+
+"CT3000S"
+"CT3001S"
+
+Unsigned
+Char
+(10 bytes)
+
+7.2. Table 4.2 Holding Register (Not Stored)
+No.
+
+Address
+(Decimal)
+
+1
+
+3000
+
+2
+
+3001
+
+3
+
+3002
+
+Name
+
+Function
+
+Key value
+
+Modify key value
+
+Current
+time
+dispensing
+state
+
+Check if the time
+dispensing running
+
+Data Range
+
+Data Type
+Unsigned
+Short int
+(2 bytes)
+
+Stopped: 0
+Dispensing: 1
+
+Unsigned
+Short int (2
+bytes)
+
+7.3. Table 4.3 Holding Register (Power-off Memory EEPROM)
+No.
+
+Address
+(Decimal)
+
+Name
+
+Function
+
+3100
+
+Rotating
+Speed
+
+Data Range
+
+Data Type
+
+Adjust rotating
+speed
+
+300-3000rpm
+
+Unsigned
+Short int
+(2 bytes)
+
+3102
+
+Running
+state
+
+Start/stop pump
+
+Stop: 0
+Start: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+3103
+
+Full speed
+state
+
+Display full speed
+state
+
+Normal: 0
+Full speed: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+3104
+
+Control
+mode
+
+External, foot
+switch, or internal
+control modes
+
+Internal: 0
+External: 1
+Footswitch: 2
+
+Unsigned
+Short int
+(2 bytes)
+
+1
+
+2
+3
+
+4
+
+5
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+27
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+Level: 3
+
+6
+7
+3107
+
+Slave
+device
+address
+
+Set Slave device
+address
+
+1-247
+
+Unsigned
+Short int (2
+bytes)
+
+3108
+
+MODBUS
+mode
+
+Switch MODBUS
+mode
+
+Computer: 0
+PLC: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+3109
+
+Dispensing
+time
+
+Set dispensing
+time
+
+1-9999（0.1-999.9
+s）
+
+8
+
+9
+
+Unsigned
+Short int
+(2 bytes)
+
+8. Parameters and Addresses of F Series Gear Pump
+Products: CT3000F, CT3001F
+Mode: RTU
+Address: 1-247 settable
+Communication rate: 4800, 9600, 19200, 38400
+Data bit: 8
+CRC: Even Parity
+Stop bit: 1
+
+8.1. Table 4.2.1 Input Register (Not Stored)
+No.
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+Address
+(Decimal)
+
+Name
+
+Function
+
+Data Range
+
+Data Type
+
+(1000)
+
+Internal
+temperature
+
+Check the
+temperature
+inside the pump
+
+-100-+100
+degrees
+
+Signed Short
+int
+(2 bytes)
+Unsigned
+Short int
+(2 bytes)
+
+(1001)
+
+Reserved
+
+（1002）
+
+Rotating
+speed
+
+Check current
+rotating speed
+
+（1004）
+
+Current
+running step
+
+Check current
+running step
+
+(1006)
+
+Requisite
+running steps
+
+Check requisite
+running steps
+
+（1008）
+
+Current
+dispensing
+time
+
+Check the
+current
+dispensing time
+
+50-3000rpm
+
+Unsigned
+Short int
+(2 bytes)
+
+0-4294967295
+
+Unsigned
+Long int
+(4 bytes)
+
+0-4294967295
+
+Unsigned long
+int
+(4 bytes)
+
+0-4294967295
+
+Unsigned long
+int
+(4 bytes)
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+28
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+(seconds)
+0-4294967295
+
+Unsigned
+Long int
+(4 bytes)
+
+0-4294967295
+
+Unsigned
+Long int
+(4 bytes)
+
+720-43200
+
+Unsigned
+Short int
+(2 bytes)
+
+Display
+manufacturer
+information
+
+"LeadFluid"
+
+Unsigned
+Char
+(10 bytes)
+
+（1023）
+
+Product
+information
+
+Display product
+information
+
+"CT3000F"
+"CT3001F"
+
+Unsigned
+Char
+(10 bytes)
+
+（1028）
+
+Touch panel X
+coordinate
+
+Display touch
+panel the X
+coordinate
+
+Unsigned
+Short int
+(2 bytes)
+
+（1029）
+
+Touch panel Y
+coordinate
+
+Display touch
+panel the Y
+coordinate
+
+Unsigned
+Short int
+(2 bytes)
+
+（1030）
+
+Analog speed
+control
+
+Display
+
+Unsigned
+Long int
+(4 bytes)
+
+16
+
+1032
+
+Cumulative
+volume
+
+Check
+cumulative
+volume
+
+17
+
+1034
+
+Unit of
+cumulative
+volume
+
+Check unit of
+cumulative
+volume
+
+（1980）
+
+Error log (20
+groups)
+
+7
+
+8
+
+（1010）
+
+Current
+dispensing
+volume
+
+Check current
+dispensing
+volume (μL)
+
+(1012)
+
+Current
+dispensing
+times
+
+Check current
+dispensing times
+
+(1016)
+
+Value of
+rotating speed
+timer
+
+The setting that
+determines
+current rotating
+speed
+
+（1018）
+
+Manufacturer
+information
+
+9
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+18
+
+50-3000rpm
+
+Float
+(4 bytes)
+μL: 1
+mL: 2
+L: 3
+
+Unsigned
+Short int
+(2 bytes)
+Unsigned
+Short int
+(2 bytes)
+
+Check error log
+
+8.2. Input register (not stored)
+No.
+
+1
+
+Address
+(Decimal)
+
+(2800)
+
+Name
+
+Function
+
+Total On
+time
+
+Check cumulative
+time that the pump
+powered on
+( seconds)
+
+Data Range
+
+Data Type
+
+0-4294967295
+
+Unsigned
+Long int
+(4 bytes)
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+29
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+2
+
+3
+
+(2802)
+
+Total
+running
+time
+
+Check cumulative
+running time
+(seconds)
+
+(2804)
+
+Total
+powered
+on times
+
+Check how many
+times the pump
+powered on
+
+0-4294967295
+
+Unsigned
+Long int
+(4 bytes)
+
+0-4294967295
+
+Unsigned
+Long int
+(4 bytes)
+
+Data Range
+
+Data Type
+
+8.3. Holding Register (Not Stored)
+No.
+
+Address
+(Decimal)
+
+Name
+
+Function
+
+3000
+
+Switch
+monitoring
+screen
+
+Switch monitoring
+screen
+
+1
+
+Unsigned
+Short int
+(2 bytes)
+
+Page 1: 0
+Page 2: 1
+
+8.4. Holding Register (Power-off Memory FRAM)
+No.
+
+1
+
+2
+
+3
+
+4
+
+5
+
+Address
+(Decimal)
+
+Name
+
+Function
+
+4000
+
+The
+leftmost
+physical
+value of
+touch
+screen
+
+The leftmost
+physical value of
+touch screen
+
+Unsigned
+Long int
+(4 bytes)
+
+4002
+
+The
+rightmost
+physical
+value of
+touch
+screen
+
+The rightmost
+physical value of
+touch screen
+
+Unsigned
+Long int
+(4 bytes)
+
+4004
+
+The
+uppermost
+physical
+value of
+touch
+screen
+
+The uppermost
+physical value of
+touch screen
+
+Unsigned
+Long int
+(4 bytes)
+
+4006
+
+The down
+most
+physical
+value of
+touch
+screen
+
+The down most
+physical value of
+touch screen
+
+Unsigned
+Long int
+(4 bytes)
+
+4008
+
+Dispensing
+parameter
+group
+setting
+
+Set dispensing
+parameter group
+
+Data Range
+
+Group 1: 0
+Group 2: 1
+Group 3: 2
+Group 4: 3
+
+Data Type
+
+Unsigned
+Short int
+(2 bytes)
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+30
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+6
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+4015
+
+4017
+
+Flow rate
+
+Working
+mode
+
+4018
+
+Key tone
+
+4019
+
+Parameter
+lock
+
+Flow rate setting
+for flow mode
+
+0.001-999.9
+
+Float
+(4 bytes)
+
+Working mode
+setting
+
+Flow: 0
+Volume: 1
+Time: 2
+Copy: 3
+
+Unsigned
+Short int
+(2 bytes)
+
+Tone on/off
+
+Tone on: 1
+Tone off: 0
+
+Unsigned
+Short int
+(2 bytes)
+
+Set parameter lock
+
+Unlock: 0
+Lock: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+Language setting
+
+Chinese: 0
+English: 1
+
+Unsigned
+Short int
+(2 bytes)
+Unsigned
+Short int
+(2 bytes)
+
+4020
+
+Language
+
+4021
+
+Model of
+pump head
+
+Pump head setting
+
+MS204: 0
+MS209: 7
+MS213: 9
+
+4022
+
+Flow rate
+unit
+
+Flow rate unit for
+flow mode
+
+uL/min: 1
+mL/min: 2
+L/min: 3
+
+Unsigned
+Short int
+(2 bytes)
+
+4024
+
+Full speed
+
+Full speeding
+setting (cleaning)
+
+Normal: 0
+Full speed: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+4025
+
+Dispensing
+state
+
+Start to dispensing
+
+Stopped: 0
+Running: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+4026
+
+Control
+mode
+
+Control mode
+setting
+
+Internal : 0
+Footswitch: 1
+Voltage: 2
+Current: 3
+
+Unsigned
+Short int
+(2 bytes)
+
+4028
+
+Slave
+device
+address
+
+Slave device
+address
+
+1-247
+
+Unsigned
+Short int
+(2 bytes)
+
+14
+15
+
+16
+
+17
+18
+19
+
+4800bbs
+9600bbs
+19200bbs
+38400bbs
+
+0
+1
+2
+3
+
+Unsigned
+Short int
+(2 bytes)
+
+20
+
+4029
+
+Baud rate
+
+Baud rate setting
+
+21
+
+4030
+
+External
+control
+mode
+
+External control
+mode setting
+
+Pulse: 0
+Level: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+22
+
+4031
+
+Infrared
+remote
+
+Turn infrared remote
+on or off
+
+Disable: 0
+Enable: 1
+
+Unsigned
+Short int
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+31
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+setting
+
+(2 bytes)
+Set default values
+
+Unsigned
+Short int
+(2 bytes)
+Float
+(4 bytes)
+
+23
+
+4034
+
+Restore
+default
+values
+
+24
+
+4035
+
+Flow rate
+Coefficient
+
+Flow rate
+coefficient setting
+
+26
+
+4126
+
+Running
+state
+
+Running state
+setting
+
+Stop: 0
+Start: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+28
+
+4127
+
+MODBUS
+mode
+
+Switch MODBUS
+mode
+
+Computer: 0
+PLC: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+Volume dispensing
+parameter setting
+
+(4128+8) × N) flow
+rate 4 bytes float
+(4130+8) × N)
+volume 4 bytes
+float
+(4132+8) × N)
+downtime 2 bytes
+unsigned
+(4133+8) × N) 2nd
+byte unsigned
+(4134+8) × N)
+liquid volume unit 2
+bytes, unsigned (1
+in microliters, 2 in
+milliliters, and 3 in
+liters)
+(4135+8) × N) flow
+unit
+2
+bytes
+unsigned
+(uL/min=1,
+mL/min=2,
+L/min=3)
+
+16 * 5
+bytes, 40
+words,
+N=0-4, a
+total of five
+sets of
+data
+
+Set time dispensing
+parameter setting
+
+(4168+6) × N) flow
+4 bytes float
+(4170+6) × N)
+running time 2
+bytes unsigned
+(4171+6) × N)
+downtime 2 bytes
+unsigned
+(4172+6) × N)
+times
+2
+byte
+
+12*5bytes
+30 words,
+N=0-4, a
+total of five
+sets of
+data
+
+25
+
+29
+
+30
+
+4128
+
+4168
+
+Volume
+dispensing
+data
+structure
+
+Time
+dispensing
+data
+structure
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+32
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+unsigned
+(4173+6) × N) flow
+unit
+2
+bytes
+unsigned
+(uL/min=1,
+mL/min=2,
+L/min=3)
+
+31
+
+4198
+
+Copy
+dispensing
+data
+structure
+
+Set replication
+dispensing
+parameter setting
+
+(4198+8) × N) flow
+4 bytes floating
+point
+(4200+8 × N) total
+liquid volume 4
+bytes floating point
+(4202+8
+× N)
+downtime 2 bytes
+unsigned
+(4203+8 × N) times
+2 byte unsigned
+(4204+8) × N) the
+unit of total liquid
+volume is 2 bytes,
+unsigned (1 in
+microliters, 2 in
+milliliters, and 3 in
+liters)
+(4205+8 × N) flow
+unit
+2
+bytes
+unsigned
+(uL/min=1,
+mL/min=2,
+L/min=3)
+
+16*5 bytes
+40 words,
+N=0-4, a
+total of five
+sets of
+data
+
+8.5. Holding Register (Power-off Memory RAM)
+No.
+
+1
+
+2
+
+Address
+(Decimal)
+
+Name
+
+Function
+
+4800
+
+Cumulative
+running
+times
+
+Record cumulative
+running times
+
+4802
+
+Cumulative
+running
+steps
+
+Record cumulative
+running times
+(equivalent to
+cumulative volume)
+
+Data Range
+
+Data Type
+
+0- 4294967295
+
+UnSigned
+Long int
+(4 bytes)
+
+0- 4294967295
+
+Unsigned
+Long int
+(4 bytes)
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+33
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+9. Parameters and Addresses of Syringe Pump
+Product: TYD01-01, TYD01-02, TYD02-01, TYD02-02, TYD02-04, TYD02-10, TYD03-01, TSD01-01, TFD01-01,
+TFD02-01, TFD03-01
+Mode: RTU
+Addresses: 1-247 (User Defined)
+Baud Rate: 4800, 9600, 19200, 38400
+Data Bits: 8
+CRC: Even Parity
+Stop Bit: 1
+
+9.1. Table 5.1. Input Register (not stored)
+No.
+
+1
+
+Address
+(Decimal)
+
+Name
+
+Function
+
+Data Range
+
+Data Type
+
+(1000)
+
+Internal
+temperatur
+e
+
+Check the
+temperature inside
+the pump
+
+-100-+100
+Degrees
+
+Signed Short
+int
+(2 bytes)
+Unsigned
+Short int
+(2 bytes)
+
+2
+
+(1001)
+
+Reserved
+
+3
+
+（1002）
+
+Infuse
+speed
+
+Check current
+Infuse speed
+
+（1004）
+
+Current
+running
+steps
+
+Check current
+running steps
+
+(1006)
+
+Required
+steps for
+current
+steps
+
+Check required
+steps for current
+steps
+
+（1008）
+
+Current
+running
+time
+
+Check current
+running time
+
+(1012)
+
+Current
+completion
+times
+
+Check current
+completion times
+
+4
+
+5
+
+6
+
+7
+
+8
+
+(1016)
+
+9
+
+（1018）
+
+10
+
+（1023）
+
+Value of
+rotating
+speed
+timer
+Manufactur
+er
+information
+Product
+information
+
+0.001-150rpm
+
+Float
+(4 bytes)
+
+0-4294967295
+
+Unsigned
+Long int
+(4 bytes)
+
+0-4294967295
+
+Unsigned long
+int
+(4 bytes)
+
+0-4294967295
+
+Unsigned long
+int
+(4 bytes)
+
+0-4294967295
+
+Unsigned
+Long int
+(4 bytes)
+
+50-65535
+
+Unsigned
+Short int
+(2 bytes)
+
+Display
+manufacturer
+information
+
+"LeadFluid"
+
+Unsigned
+Char
+(10 bytes)
+
+Display product
+information
+
+"TYD01"
+
+Unsigned
+Char
+
+The setting that
+determines current
+rotating speed
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+34
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+(10 bytes)
+
+（1028）
+
+Touch
+panel Xcoordinate
+
+Display touch panel
+X-coordinate
+
+Unsigned
+Short int
+(2 bytes)
+
+（1029）
+
+Touch
+panel Ycoordinate
+
+Display touch panel
+Y-coordinate
+
+Unsigned
+Short int
+(2 bytes)
+
+1032
+
+Cumulative
+volume
+
+Checking the
+cumulative volume
+
+Float
+(4 bytes)
+
+15
+
+1034
+
+Unit of
+cumulative
+volume
+
+Check unit of
+cumulative volume
+
+16
+
+1035
+
+Consumpti
+on of liquid
+
+Checking the value
+of liquid
+consumption
+
+1037
+
+Liquid
+consumpti
+on unit
+
+Checking liquid
+consumption unit
+
+1038
+
+Remaining
+liquid
+volume
+
+Checking residual
+liquid volume
+
+19
+
+1040
+
+Remaining
+liquid unit
+
+Checking liquid
+volume unit
+
+20
+
+1041
+
+Withdraw
+speed
+
+1043
+
+11
+
+12
+13
+14
+
+17
+
+18
+
+21
+
+22
+
+23
+
+24
+
+25
+
+nL: 0
+μL: 1
+mL: 2
+L: 3
+
+Unsigned
+Short int
+(2 bytes)
+Float
+(4 bytes)
+
+nL: 0
+μL: 1
+mL: 2
+
+Unsigned
+Short int
+(2 bytes)
+Float
+(4 bytes)
+
+nL: 0
+μL: 1
+mL: 2
+
+Unsigned
+Short int
+(2 bytes)
+
+Checking withdraw
+speed
+
+0.001-150rpm
+
+Float
+(4 bytes)
+
+Time
+consuming
+
+Checking
+consumption time
+
+0-4294967295
+Unit:
+milliseconds
+
+Unsigned
+Long int
+(4 bytes)
+
+1045
+
+Remainder
+
+Checking remaining
+time
+
+0-4294967295
+Unit:
+milliseconds
+
+Unsigned
+Long int
+(4 bytes)
+
+1047
+
+Alarm
+state
+
+Checking for alarms
+
+Normal: 0
+Alarm: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+1052
+
+Maximum
+flow rate
+
+The maximum flow
+rate of the current
+syringe
+
+Unit: nL/min
+
+Float
+(4 bytes)
+
+Suitable for
+software versions
+1.15 and above
+
+1054
+
+Minimum
+flow rate
+
+The minimum flow
+rate of the current
+syringe
+
+Unit: nL/min
+
+Float
+(4 bytes)
+
+Suitable for
+software versions
+1.15 and above
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+35
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+9.2. Input Register (Not Stored)
+No.
+
+1
+
+2
+
+3
+
+Address
+(Decimal)
+
+Name
+
+Function
+Check cumulative
+time that
+the pump powered
+on
+
+(2800)
+
+Total on
+time
+
+(2802)
+
+Total
+running
+time
+
+Check cumulative
+running
+time
+
+(2804)
+
+Total
+powered
+on
+cycles
+
+Check the cycles
+the pump
+has powered on
+
+Data Range
+
+Data Type
+
+0-4294967295
+Unit: second
+
+Unsigned
+Long int
+(4 bytes)
+
+0-4294967295
+Unit: second
+
+Unsigned
+Long int
+(4 bytes)
+
+0-4294967295
+
+Unsigned
+Long int
+(4 bytes)
+
+9.3. Holding Register (Not Stored)
+No.
+
+1*
+
+2*
+
+Address
+(Decimal)
+
+Name
+
+Function
+
+Data Range
+
+Data Type
+
+(3001)
+
+Fast infuse
+
+Start or stop quick
+infuse
+
+Stopped: 0
+Fast forward:1
+
+Unsigned
+Short int
+(2 bytes)
+
+(3002)
+
+Fast
+withdraw
+
+Start or stop quick
+withdraw
+
+Stopped: 0
+Fast forward: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+9.4. Holding Register (Power-off Memory FRAM)
+No.
+
+1
+
+2
+
+3
+
+Address
+
+Name
+
+Function
+
+Data Range
+
+Data Type
+
+4000
+
+The leftmost
+physical
+coordinate
+of touch
+screen
+
+The leftmost
+physical
+coordinate of
+touch screen
+
+Unsigned
+Long int
+(4 bytes)
+
+4002
+
+The
+rightmost
+physical
+coordinate
+of touch
+screen
+
+The rightmost
+physical
+coordinate of
+touch screen
+
+Unsigned
+Long int
+(4 bytes)
+
+4004
+
+The
+uppermost
+physical
+
+The uppermost
+physical
+coordinate of
+
+Unsigned
+Long int
+(4 bytes)
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+36
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+coordinate
+of touch
+screen
+
+touch screen
+
+4006
+
+The down
+most
+physical
+coordinate
+of touch
+screen
+
+The down most
+physical
+coordinate of
+touch screen
+
+5
+
+4008
+
+Number of
+pre stored
+parameter
+groups
+
+Select the number
+of groups for pre
+stored parameters
+
+6
+
+4015
+
+Flow rate
+
+Flow rate in
+continuous mode
+
+4
+
+7
+
+8
+
+9
+
+10
+
+4017
+
+Working
+mode
+
+Unsigned
+Long int
+(4 bytes)
+
+Group 1: 0
+Group 2: 1
+Group 3: 2
+
+Unsigned
+Short int
+(2 bytes)
+Float
+(4 bytes)
+
+Working mode
+setting
+
+Only infuse: 0
+Only withdraw: 1
+Withdraw/infuse:
+2
+Infuse/withdraw :
+3
+Continuous: 4
+
+Unsigned
+Short int
+(2 bytes)
+
+Unsigned
+Short int
+(2 bytes)
+
+4018
+
+Key tone
+
+Key tone setting
+
+Tone on: 1
+Tone off: 0
+
+4019
+
+Parameter
+lock
+
+Parameter lock
+setting
+
+Unlock: 0
+Lock: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+Language setting
+
+Chinese: 0
+English: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+4020
+
+Language
+
+4021
+
+Syringe
+number
+
+Syringe number
+
+4022
+
+Flow rate
+units
+
+Flow rate units
+setting for
+continuous mode
+
+nL/min: 0
+uL/ min: 1
+mL/ min: 2
+
+Unsigned
+Short int
+(2 bytes)
+
+4023
+
+Direction of
+movement
+
+Current movement
+direction (can be
+set in continuous
+mode)
+
+Withdraw
+direction: 0
+Infuse direction:
+1
+
+Unsigned
+Short int
+(2 bytes)
+
+14
+
+4024
+
+Paused
+state
+
+Pause state
+setting
+
+Terminate: 0
+Pause: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+15
+
+4025
+
+Dispensing
+state
+
+Start to dispense
+
+Stop: 0
+Start/Continue:1
+
+Unsigned
+Short int
+
+11
+
+12
+
+13
+
+Unsigned
+Short int
+(2 bytes)
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+37
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+(2 bytes)
+
+Control
+mode
+
+Set external
+control signal
+control method:
+pulse or level (can
+be set in
+continuous mode)
+
+4027
+
+Push force
+
+Push force
+settling
+
+4028
+
+Slave
+address
+
+Pulse: 0
+Level: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+1-100
+
+Unsigned
+Short int
+(2 bytes)
+
+Slave address
+setting
+
+1-247
+
+Unsigned
+Short int
+(2 bytes)
+
+4029
+
+Communicat
+ion baud
+rate
+
+Set the number of
+communication
+baud rate
+
+4800bps 0
+9600bps 1
+19200bps 2
+38400bps 3
+
+Unsigned
+Short int
+(2 bytes)
+
+20
+
+4030
+
+LCD
+backlight
+
+Set the brightness
+of the LCD
+backlight
+
+20-100
+
+Unsigned
+Short int
+(2 bytes)
+
+21
+
+4035
+
+Velocity
+coefficient
+
+Set the coefficient
+for custom
+syringes
+
+4034
+
+Restore
+default
+values
+
+16
+
+17
+
+18
+
+19
+
+22
+
+4026
+
+Float
+(4 bytes)
+
+Set default values
+
+Restore: 55
+Normal: 170
+
+Unsigned
+Short int
+(2 bytes)
+
+Turn on: 0
+Turn off: 1
+
+Unsigned
+Short int
+(2 bytes)
+
+23
+
+4087
+
+Traffic alarm
+
+Traffic alarm
+setting
+
+24
+
+4088
+
+Customized
+syringe ID
+
+Customized
+syringe ID setting
+
+0.001-40mm
+
+Float
+(4 bytes)
+
+4090
+
+Customized
+syringe
+volume
+
+Customized
+syringe volume
+setting
+
+0.001-200
+
+Float
+(4 bytes)
+
+26
+
+4092
+
+Custom
+syringe unit
+
+Set the volume
+unit of a custom
+syringe
+
+uL: 1
+mL: 2
+
+Unsigned
+Short int
+(2 bytes)
+
+27
+
+4093
+
+Hours of
+interval time
+
+Hours for interval
+time setting
+
+0-999
+
+Unsigned
+Short int
+(2 bytes)
+
+4094
+
+Minutes of
+interval time
+
+Minutes for
+interval time
+setting
+
+0-59
+
+Unsigned
+Short int
+(2 bytes)
+
+4095
+
+Seconds for
+interval time
+
+Seconds for
+interval time
+setting
+
+0-59
+
+Unsigned
+Short int
+(2 bytes)
+
+25
+
+28
+
+29
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+38
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+30
+
+31
+
+32
+
+33
+
+34
+
+35
+
+36
+
+4096
+
+Milliseconds
+for
+interval time
+interval time
+
+Milliseconds for
+interval time
+settingtime
+
+4097
+
+Number of
+cycles
+
+Set the number of
+cycles
+
+4126
+
+Running
+state
+
+4127
+
+MODBUS
+mode
+
+4128
+
+4146
+
+4164
+
+Only infuse
+data
+structure
+
+Only
+withdraw
+data
+structure
+
+Withdraw
+data
+structure
+
+0-99
+
+Unsigned
+Short int
+(2 bytes)
+
+0-999
+
+Unsigned
+Short int
+(2 bytes)
+
+Set whether to run
+or stop
+
+Stopped,runing
+
+Unsigned
+Short int
+(2 bytes)
+
+Switch MODBUS
+mode
+
+Computer or
+PLC
+
+Unsigned
+Short int
+(2 bytes)
+
+Set parameters for
+infuse only (three
+sets in total)
+
+4128+6 * N liquid
+volume 4 bytes
+float
+4130+6*N fluid
+infuse4 bytes
+float
+4132+6 * N liquid
+volume unit 2
+bytes unsigned
+4133+6*N infuse
+flow uniy2 bytes
+unsigned
+
+12*3 bytes
+18 words,
+N=0-2, three
+sets of data
+in total
+
+Set only withdraw
+parameters (three
+sets in total)
+
+4146+6*N liquid
+volume 4 bytes
+float
+4148+6*N
+withdraw flow 4
+bytes float
+4150+6*N
+volume unit 2
+bytes unsigned
+4151+6*N
+withdraw flow
+unit 2 bytes
+unsigned
+
+12*3 bytes
+18 words,
+N=0-2, three
+sets of data
+in total
+
+Set withdraw
+parameters (three
+sets in total)
+
+4164+10*N liquid
+volume 4 bytes
+float
+4166+10*N
+infuse flow 4
+bytes float
+4168+10*N
+withdraw flow 4
+
+20*3 bytes
+30 words,
+N=0-2, three
+sets of data
+in total
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+39
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+bytes floating
+point
+4170+10*N
+volume unit 2
+bytes unsigned
+4171+10*N
+infuse flow unit 2
+bytes unsigned
+4172+10*N
+withdraw flow
+unit 2 bytes
+unsigned
+
+37
+
+4194
+
+Infuse
+withdraw
+data
+structure
+
+Set infuse
+withdraw
+parameters (three
+sets in total)
+
+4194+10*N liquid
+volume 4 bytes
+float
+4196+10*N
+infuse flow 4
+bytes float
+4198+10*N
+withdraw flow 4
+bytes float
+4200+10*N
+volume unit 2
+bytes unsigned
+4201+9*N flow
+unit 2 bytes
+unsigned
+4202+10*N
+withdraw flow
+unit 2 bytes
+unsigned
+
+20 * 3 bytes,
+30 words,
+N=0-2, three
+sets of data
+in total
+
+9.5. Holding Register (Power-off Memory RAM)
+No.
+
+1
+
+2
+
+Address
+
+Name
+
+Function
+
+4800
+
+Total
+number of
+running
+times
+
+Record cumulative
+running times
+
+4802
+
+Total
+number of
+running
+steps
+
+Record cumulative
+running
+steps (equivalent to
+cumulative volume)
+
+Data Range
+
+Data Type
+
+0- 4294967295
+
+UnSigned
+Long int
+(4 bytes)
+
+0- 4294967295
+
+Unsigned
+Long int
+(4 bytes)
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+40
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+10. RS485 hardware interface (DB15 pin) for Lead Fluid products
+(1) External power supply
+Connect the positive end of the external+24V or+12V power supply to the 4-pin VCC_ W connection, connect the
+negative end with 8-pin COM
+
+1
+
+2
+9
+
+3
+10
+
+4
+11
+
+5
+12
+
+6
+13
+
+7
+14
+
+8
+15
+
+B
+VCC_W
+
+A
+
+COM
+DC12V
+
+(2) Internal power supply
+Connect 10-pin+12V and 4-pin VCC of DB15-pin_ W connection, connect 11-pin GND with 8-pin COM
+
+1
+
+2
+9
+
+3
+10
+
+4
+11
+
+5
+12
+
+6
+13
+
+7
+14
+
+8
+15
+
+B
+A
+
+11.Example of Communication Protocol Data Frame
+11.1. Read Input Register
+Temperature: address 1000, L or F series, 1 word length, integer variable
+000000-Tx: 01 04 03 E8 00 01 B1 BA
+000001-Rx: 01 04 02 00 22 39 29
+Read
+HEX
+Slave address
+
+01
+
+Function code
+
+04
+
+Register High
+
+03
+
+Register low
+
+E8
+
+Number of registers high
+
+00
+
+Number of registers low
+
+01
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+41
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+CRC high bit
+
+B1
+
+CRC low bit
+
+BA
+
+Description: Address 1000（03E8）
+Response
+HEX
+Slave address
+
+01
+
+Function code
+
+04
+
+Number of bytes
+
+02
+
+Data-high
+
+00
+
+Data-low
+
+22
+
+CRC high bit
+
+39
+
+CRC low bit
+
+29
+
+Description: actual return value 34（00 22）
+
+11.2. Read and Keep Registers
+Flow: Address 4015, L or F series, 2 words length, single precision floating point variable, byte order CDAB
+(original computer mode)
+000032-Tx:01 03 0F AF 00 02 F7 3E
+000033-Rx:01 03 04 EF CA 42 65 1E 52
+Read
+HEX
+Slave address
+
+01
+
+Function code
+
+03
+
+Register High
+
+0F
+
+Register Low
+
+AF
+
+Number of registers high
+
+00
+
+Number of registers low
+
+02
+
+CRC high bit
+
+F7
+
+CRC low bit
+
+3E
+
+Description: Address 4015（0F AF）
+Response
+HEX
+Slave address
+
+01
+
+Function code
+
+03
+
+Number of bytes
+
+04
+
+Data 1 high bit (4015)
+
+EF
+
+Data 1 low bit (4015)
+
+CA
+
+Data 2 high bit (4016)
+
+42
+
+Data 2 low bit (4016)
+
+65
+
+CRC high bit
+
+1E
+
+CRC low bit
+
+52
+
+Description: The actual return value is 57.484169 (42 65 EF CA). The byte order selected here is CDAB (original
+communication mode: computer mode), and the data format is data 2+data 1 to form a four-byte hexadecimal
+number, which needs to be converted to floating point number
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+42
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+11.3. Write Holding Register
+Start / stop: Address 4126, L or F series, 1 word length, integer variable
+Tx:088-01 06 10 1E 00 01 2C CC
+Rx:089-01 06 10 1E 00 01 2C CC
+Write
+HEX
+Slave address
+
+01
+
+Function code
+
+06
+
+Register High
+
+10
+
+Register Low
+
+1E
+
+Number of registers high
+
+00
+
+Number of registers low
+
+01
+
+CRC high bit
+
+2C
+
+CRC low bit
+
+CC
+
+Description: Address 4126 (10 1E)
+Response
+HEX
+Slave address
+
+01
+
+Function code
+
+06
+
+Register High
+
+10
+
+Register Low
+
+1E
+
+Number of registers high
+
+00
+
+Number of registers low
+
+01
+
+CRC high bit
+
+CC
+
+CRC low bit
+
+CC
+
+11.4. Write Holding Register
+Flow: address 4015, L or F series, 2 word length, single-precision floating point variable, byte order CDAB (original
+computer mode)
+Tx:000082-01 10 0F AF 00 02 04 00 00 41 20 C9 EF
+Rx:000083-01 10 0F AF 00 02 72 FD
+Write
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+43
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+HEX
+Slave address
+
+01
+
+Function code
+
+10
+
+Register High
+
+0F
+
+Register Low
+
+AF
+
+Number of registers high
+
+00
+
+Number of registers low
+
+02
+
+Number of bytes
+
+04
+
+Data 1 high bit (4015)
+
+00
+
+Data 1 low bit (4015)
+
+00
+
+Data 2 high bit (4016)
+
+41
+
+Data 2 low bit (4016)
+
+20
+
+Slave address
+
+C9
+
+Function code
+
+EF
+
+Description: Address 4015 (0F AF). Data 10.0（41 20 00 00）
+Response
+HEX
+Slave address
+
+01
+
+Function code
+
+10
+
+Register High
+
+0F
+
+Register Low
+
+AF
+
+Number of registers high
+
+00
+
+Number of registers low
+
+02
+
+CRC high bit
+
+72
+
+CRC low bit
+
+FD
+
+Note: The byte order selected here is CDAB (original communication mode: computer mode), and the data
+format is data 2+data 1 to form a four-byte hexadecimal number, which needs to be converted to floating point
+number
+
+11.5. Read holding register
+Flow: address 4015, L or F series, 2 word length, single-precision floating point variable, byte order ABCD (original
+PLC mode)
+000032-Tx:01 03 0F AF 00 02 F7 3E
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+44
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+000033-Rx:01 03 04 42 65 EF CA 32 33
+Read
+HEX
+Slave address
+
+01
+
+Function code
+
+03
+
+Register High
+
+0F
+
+Register Low
+
+AF
+
+Number of registers high
+
+00
+
+Number of registers low
+
+02
+
+CRC high bit
+
+F7
+
+CRC low bit
+
+3E
+
+Description: Address4015（0F AF）
+Response
+HEX
+Slave address
+
+01
+
+Function code
+
+03
+
+Number of bytes
+
+04
+
+Data 1 high bit (4015)
+
+42
+
+Data 1 low bit (4015)
+
+65
+
+Data 2 high bit (4016)
+
+EF
+
+Data 2 low bit (4016)
+
+CA
+
+CRC high bit
+
+32
+
+CRC low bit
+
+33
+
+Description: The actual return value is 57.484169 (42 65 EF CA).
+The byte order selected here is ABCD (original communication mode: PLC mode). Its data sorting order is
+different from the computer mode. The data format is data 1+data 2 to form a four-byte hexadecimal number,
+which needs to be converted to floating point number.
+
+12.Appendix 1: Solution of hexadecimal to single-precision floating
+point number
+Union
+{
+float f
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+45
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+char buf[4]
+}data
+void write_Df(u16 ndata, float df)
+{
+u16 d0,d1
+data.f = df
+d0 = (data.buf [1] << 8) + data.buf [0] ;
+d1 = (data.buf [3] << 8) + data.buf [2] ;
+}
+
+13. Appendix 2: CRC Cyclic Redundancy Check
+unsigned char *puchMsg // To generate CRC values, point the pointer to a buffer containing binary data
+unsigned short usDataLen // The number of bytes in the buffer.
+unsigned short CRC16(unsigned char *puchMsg, unsigned short usDataLen)
+{
+unsigned char uchCRCHi = 0xFF /* Initialize high byte */
+unsigned char uchCRCLo = 0xFF /* Initialize low byte */
+unsigned uIndex ; /* Put CRC table */
+while (usDataLen––) /* Via data buffer */
+{
+uIndex = uchCRCHi ^ *puchMsg++ ; /* Calculate CRC */
+uchCRCHi = uchCRCLo ^ auchCRCHi[uIndex]
+uchCRCLo = auchCRCLo[uIndex] ;
+}
+return (uchCRCHi << 8 | uchCRCLo)
+}
+
+// High byte table
+/* Table of CRC values for high–order byte */
+static unsigned char auchCRCHi[] = {
+0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81,
+0x40, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0,
+0x80, 0x41, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40, 0x00, 0xC1, 0x81, 0x40, 0x01,
+0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
+0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40, 0x00, 0xC1, 0x81,
+0x40, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0,
+0x80, 0x41, 0x00, 0xC1, 0x81, 0x40, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01,
+0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40,
+0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81,
+0x40, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0,
+0x80, 0x41, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40, 0x00, 0xC1, 0x81, 0x40, 0x01,
+0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41,
+0x00, 0xC1, 0x81, 0x40, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81,
+0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0,
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+46
+
+http : www.leadfluid.com
+
+BAODING LEAD FLUID TECHNOLOGY CO.,LTD.
+
+0x80, 0x41, 0x00, 0xC1, 0x81, 0x40, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01,
+0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41,
+0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81,
+0x40
+}
+// Low byte table
+/* Table of CRC values for low–order byte */
+static char auchCRCLo[] = {
+0x00, 0xC0, 0xC1, 0x01, 0xC3, 0x03, 0x02, 0xC2, 0xC6, 0x06, 0x07, 0xC7, 0x05, 0xC5, 0xC4,
+0x04, 0xCC, 0x0C, 0x0D, 0xCD, 0x0F, 0xCF, 0xCE, 0x0E, 0x0A, 0xCA, 0xCB, 0x0B, 0xC9, 0x09,
+0x08, 0xC8, 0xD8, 0x18, 0x19, 0xD9, 0x1B, 0xDB, 0xDA, 0x1A, 0x1E, 0xDE, 0xDF, 0x1F, 0xDD,
+0x1D, 0x1C, 0xDC, 0x14, 0xD4, 0xD5, 0x15, 0xD7, 0x17, 0x16, 0xD6, 0xD2, 0x12, 0x13, 0xD3,
+0x11, 0xD1, 0xD0, 0x10, 0xF0, 0x30, 0x31, 0xF1, 0x33, 0xF3, 0xF2, 0x32, 0x36, 0xF6, 0xF7,
+0x37, 0xF5, 0x35, 0x34, 0xF4, 0x3C, 0xFC, 0xFD, 0x3D, 0xFF, 0x3F, 0x3E, 0xFE, 0xFA, 0x3A,
+0x3B, 0xFB, 0x39, 0xF9, 0xF8, 0x38, 0x28, 0xE8, 0xE9, 0x29, 0xEB, 0x2B, 0x2A, 0xEA, 0xEE,
+0x2E, 0x2F, 0xEF, 0x2D, 0xED, 0xEC, 0x2C, 0xE4, 0x24, 0x25, 0xE5, 0x27, 0xE7, 0xE6, 0x26,
+0x22, 0xE2, 0xE3, 0x23, 0xE1, 0x21, 0x20, 0xE0, 0xA0, 0x60, 0x61, 0xA1, 0x63, 0xA3, 0xA2,
+0x62, 0x66, 0xA6, 0xA7, 0x67, 0xA5, 0x65, 0x64, 0xA4, 0x6C, 0xAC, 0xAD, 0x6D, 0xAF, 0x6F,
+0x6E, 0xAE, 0xAA, 0x6A, 0x6B, 0xAB, 0x69, 0xA9, 0xA8, 0x68, 0x78, 0xB8, 0xB9, 0x79, 0xBB,
+0x7B, 0x7A, 0xBA, 0xBE, 0x7E, 0x7F, 0xBF, 0x7D, 0xBD, 0xBC, 0x7C, 0xB4, 0x74, 0x75, 0xB5,
+0x77, 0xB7, 0xB6, 0x76, 0x72, 0xB2, 0xB3, 0x73, 0xB1, 0x71, 0x70, 0xB0, 0x50, 0x90, 0x91,
+0x51, 0x93, 0x53, 0x52, 0x92, 0x96, 0x56, 0x57, 0x97, 0x55, 0x95, 0x94, 0x54, 0x9C, 0x5C,
+0x5D, 0x9D, 0x5F, 0x9F, 0x9E, 0x5E, 0x5A, 0x9A, 0x9B, 0x5B, 0x99, 0x59, 0x58, 0x98, 0x88,
+0x48, 0x49, 0x89, 0x4B, 0x8B, 0x8A, 0x4A, 0x4E, 0x8E, 0x8F, 0x4F, 0x8D, 0x4D, 0x4C, 0x8C,
+0x44, 0x84, 0x85, 0x45, 0x87, 0x47, 0x46, 0x86, 0x82, 0x42, 0x43, 0x83, 0x41, 0x81, 0x80,
+0x40
+}
+
+Add : No.999, Fuxing Road, Baoding City, Hebei Province, China
+Tel : +86-312-6770711
+
+47
+
+http : www.leadfluid.com
+
+
