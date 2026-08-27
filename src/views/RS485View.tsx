@@ -20,9 +20,10 @@ interface Props {
     }
   ) => void;
   onSelectPump: (ip: string) => void;
+  onViewConnected: () => void;
 }
 
-export function RS485View({ devices, isScanning, onBack, onScanRTU, onSelectPump }: Props) {
+export function RS485View({ devices, isScanning, onBack, onScanRTU, onSelectPump, onViewConnected }: Props) {
   const [ports, setPorts] = useState<string[]>([]);
   const [selectedPort, setSelectedPort] = useState<string>('');
   const [baudRate, setBaudRate] = useState<number>(9600);
@@ -70,6 +71,7 @@ export function RS485View({ devices, isScanning, onBack, onScanRTU, onSelectPump
 
   // Only show devices discovered on the selected port
   const currentDevices = devices.filter((d) => d.ip.startsWith(selectedPort + ':'));
+  const connectedCount = devices.filter((d) => d.status === 'connected').length;
 
   return (
     <motion.div
@@ -207,9 +209,16 @@ export function RS485View({ devices, isScanning, onBack, onScanRTU, onSelectPump
               <CheckCircle2 className="text-green-500 w-5 h-5" />
               Found {currentDevices.length} {currentDevices.length === 1 ? 'Device' : 'Devices'}
             </h3>
-            <Button variant="outline" size="sm" onClick={handleScan} className="text-xs">
-              Rescan
-            </Button>
+            <div className="flex gap-2">
+              {connectedCount > 0 && (
+                <Button variant="secondary" size="sm" onClick={onViewConnected} className="text-xs">
+                  View Connected ({connectedCount})
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={handleScan} className="text-xs">
+                Rescan
+              </Button>
+            </div>
           </div>
 
           <div className="space-y-4">

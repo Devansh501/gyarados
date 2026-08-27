@@ -20,6 +20,7 @@ export const MAX_POLL_FAILURES = 3;
 export const MAX_RS485_DEVICES = 20;
 export const RS485_DISCOVERY_REGISTER = 3102;
 export const RS485_CHECK_ALIVE_INTERVAL = 500;
+export const RS485_SCAN_ATTEMPTS_PER_UNIT = 2;
 
 /** Application UI Delays */
 export const APP_TOAST_TIMEOUT_MS = 3000;

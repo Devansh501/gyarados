@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { usePumpStore } from '../../store/pumpStore';
 import { motion } from 'framer-motion';
 import { Play, Square, Loader2, RotateCw, RotateCcw, Activity, Clock, Repeat, Hourglass } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Slider } from '../ui/slider';
 import { Device } from '../../types/device';
+import { S_SERIES_HOLDING } from '../../registers';
 
 interface BasePumpDashboardProps {
   device: Device;
@@ -12,79 +14,55 @@ interface BasePumpDashboardProps {
 }
 
 export function BasePumpDashboard({ device, writeRegister }: BasePumpDashboardProps) {
+  const deviceState = device.state ?? {};
+  
   const [runTime, setRunTime] = useState<number>(60);
   const [pauseTime, setPauseTime] = useState<number>(5);
   const [cycles, setCycles] = useState<number>(1);
   const [rpm, setRpm] = useState<number>(150);
   const [direction, setDirection] = useState<0 | 1>(0); // 0: CW, 1: CCW
   
-  const [isPlaying, setIsPlaying] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // Cycle tracking state
-  const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
-  const [elapsedTime, setElapsedTime] = useState(0);
+  // Store sync
+  const pumpState = usePumpStore((state: any) => state.pumpStates[device.ip]);
+  const currentPhase = pumpState?.currentPhase ?? 'dispense';
+  const currentCycle = pumpState?.currentCycle ?? 0;
+  const isPlaying = pumpState?.isPlaying ?? false;
+  const elapsedPhaseTime = (pumpState?.elapsedPhaseTime ?? 0) / 10; // convert deciseconds to seconds
 
-  const totalCycleTime = runTime + pauseTime;
-
-  // Auto-start if hardware is running and we aren't tracking
+  // Sync settings state from device when idle
   useEffect(() => {
-    if (device.isRunning && !isPlaying) {
-      setIsPlaying(true);
-      setSessionStartTime(Date.now());
-      setElapsedTime(0);
+    if (!isPlaying) {
+      if (deviceState.runTime !== undefined) setRunTime(deviceState.runTime);
+      if (deviceState.pauseTime !== undefined) setPauseTime(deviceState.pauseTime);
+      if (deviceState.cycles !== undefined) setCycles(deviceState.cycles);
+      if (deviceState.rpm !== undefined) setRpm(deviceState.rpm);
+      if (deviceState.direction !== undefined) setDirection(deviceState.direction as 0 | 1);
     }
-  }, [device.isRunning]); // Only start, don't stop (since it drops to 0 during pause)
+  }, [deviceState.runTime, deviceState.pauseTime, deviceState.cycles, deviceState.rpm, deviceState.direction, isPlaying]);
 
-  // Timer loop for the macro cycle
-  useEffect(() => {
-    if (isPlaying && sessionStartTime) {
-      const interval = setInterval(() => {
-        const elapsed = (Date.now() - sessionStartTime) / 1000;
-        
-        // Auto-stop when macro cycle completes
-        if (elapsed >= totalCycleTime * cycles) {
-          setIsPlaying(false);
-          setSessionStartTime(null);
-          setElapsedTime(0);
-        } else {
-          setElapsedTime(elapsed);
-        }
-      }, 100);
-      
-      return () => clearInterval(interval);
-    }
-  }, [isPlaying, sessionStartTime, totalCycleTime, cycles]);
-
-  const currentCycle = isPlaying ? Math.min(cycles, Math.floor(elapsedTime / totalCycleTime) + 1) : 0;
-  const timeInCurrentCycle = elapsedTime % totalCycleTime;
-  const currentPhase = isPlaying ? (timeInCurrentCycle <= runTime ? 'Dispensing' : 'Paused') : 'Idle';
-  const phaseTimeRemaining = isPlaying 
-    ? (currentPhase === 'Dispensing' ? runTime - timeInCurrentCycle : totalCycleTime - timeInCurrentCycle) 
-    : 0;
+  const showProgress = isPlaying;
+  const phaseTimeRemaining = currentPhase === 'dispense' 
+    ? Math.max(0, runTime - elapsedPhaseTime)
+    : Math.max(0, pauseTime - elapsedPhaseTime);
 
   const handleTogglePlay = async () => {
     setIsSyncing(true);
     try {
       if (isPlaying) {
         // Stop
-        await writeRegister(device.ip, 3102, 0);
-        setIsPlaying(false);
-        setSessionStartTime(null);
-        setElapsedTime(0);
+        await writeRegister(device.ip, S_SERIES_HOLDING.RUN_STATE, 0);
       } else {
         // Apply settings before starting
-        await writeRegister(device.ip, 3100, Math.round(rpm * 10)); // Scale RPM to 0.1 units
-        await writeRegister(device.ip, 3101, direction);
-        await writeRegister(device.ip, 3109, Math.round(runTime * 10)); // Scale to 0.1s units
-        await writeRegister(device.ip, 3110, Math.round(pauseTime * 10)); // Scale to 0.1s units
-        await writeRegister(device.ip, 3111, cycles);
+        await writeRegister(device.ip, S_SERIES_HOLDING.RPM, Math.round(rpm * 10)); // Scale RPM to 0.1 units
+        await writeRegister(device.ip, S_SERIES_HOLDING.DIRECTION, direction);
+        await writeRegister(device.ip, S_SERIES_HOLDING.RUN_TIME, Math.round(runTime * 10)); // Scale to 0.1s units
+        await writeRegister(device.ip, S_SERIES_HOLDING.PAUSE_TIME, Math.round(pauseTime * 10)); // Scale to 0.1s units
+        await writeRegister(device.ip, S_SERIES_HOLDING.CYCLES, cycles);
         
         // Start
-        await writeRegister(device.ip, 3102, 1);
-        setIsPlaying(true);
-        setSessionStartTime(Date.now());
-        setElapsedTime(0);
+        await writeRegister(device.ip, S_SERIES_HOLDING.RUN_STATE, 1);
       }
     } catch (error) {
       console.error('Failed to toggle pump state:', error);
@@ -250,7 +228,7 @@ export function BasePumpDashboard({ device, writeRegister }: BasePumpDashboardPr
           </motion.div>
 
           <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} className="space-y-4">
-             {isPlaying && (
+             {showProgress && (
                <motion.div 
                  initial={{ opacity: 0, height: 0 }} 
                  animate={{ opacity: 1, height: 'auto' }} 
@@ -262,7 +240,9 @@ export function BasePumpDashboard({ device, writeRegister }: BasePumpDashboardPr
                  </div>
                  <div className="flex flex-col items-center">
                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Phase</span>
-                   <span className={`text-sm font-bold ${currentPhase === 'Dispensing' ? 'text-green-500' : 'text-orange-500'}`}>{currentPhase}</span>
+                   <span className={`text-sm font-bold ${currentPhase === 'dispense' ? 'text-green-500' : 'text-orange-500'}`}>
+                     {currentPhase === 'dispense' ? 'Dispensing' : 'Paused'}
+                   </span>
                  </div>
                  <div className="flex flex-col text-right">
                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Time</span>

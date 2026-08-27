@@ -8,15 +8,16 @@ import { ThemeToggle } from './components/ThemeToggle';
 import { ConnectionOptions } from './views/ConnectionOptions';
 import { DiscoveryView } from './views/DiscoveryView';
 import { RS485View } from './views/RS485View';
+import { ConnectedDevicesView } from './views/ConnectedDevicesView';
 import { useDeviceManager } from './hooks/useDeviceManager';
 import { APP_TOAST_TIMEOUT_MS, APP_SPLASH_SCREEN_DELAY_MS } from './constants';
 
 function App() {
   const [isSplashing, setIsSplashing] = useState(true);
-  const [activeTab, setActiveTab] = useState<'options' | 'wifi' | 'rs485' | 'dashboard'>('options');
+  const [activeTab, setActiveTab] = useState<'options' | 'wifi' | 'rs485' | 'connected' | 'dashboard'>('options');
   const [selectedPumpIp, setSelectedPumpIp] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const { devices, isScanning, error, scan, connect, scanRTU, disconnect, writeRegister } = useDeviceManager(setToastMessage);
+  const { devices, isScanning, error, scan, connect, scanRTU, disconnect, writeRegister, startVerbosePolling, stopVerbosePolling } = useDeviceManager(setToastMessage);
 
   useEffect(() => {
     if (toastMessage) {
@@ -113,6 +114,7 @@ function App() {
                           onScan={scan}
                           onConnect={connect}
                           onSelectPump={handleSelectPump}
+                          onViewConnected={() => setActiveTab('connected')}
                         />
                       )}
 
@@ -122,6 +124,14 @@ function App() {
                           isScanning={isScanning}
                           onBack={() => setActiveTab('options')}
                           onScanRTU={scanRTU}
+                          onSelectPump={handleSelectPump}
+                          onViewConnected={() => setActiveTab('connected')}
+                        />
+                      )}
+                      {activeTab === 'connected' && (
+                        <ConnectedDevicesView
+                          devices={devices as any}
+                          onBack={() => setActiveTab('options')}
                           onSelectPump={handleSelectPump}
                         />
                       )}
@@ -144,10 +154,11 @@ function App() {
               <PumpDashboard
                 devices={devices as any}
                 selectedIp={selectedPumpIp}
-                onSelectPump={setSelectedPumpIp}
                 onDisconnect={disconnect}
-                onBack={() => setActiveTab('wifi')}
+                onBack={() => setActiveTab('connected')}
                 writeRegister={writeRegister}
+                startVerbosePolling={startVerbosePolling}
+                stopVerbosePolling={stopVerbosePolling}
               />
             </motion.div>
           )}

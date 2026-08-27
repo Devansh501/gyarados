@@ -1,33 +1,40 @@
-import { useState } from 'react';
-import { PowerOff, ChevronLeft, Menu, Activity } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect } from 'react';
+import { PowerOff, ChevronLeft, Activity } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Button } from './ui/button';
-import { ScrollArea } from './ui/scroll-area';
-import { Separator } from './ui/separator';
 import type { Device } from '../types/device';
 import { BasePumpDashboard } from './dashboards/BasePumpDashboard';
 
 interface PumpDashboardProps {
   devices: Device[];
   selectedIp: string | null;
-  onSelectPump: (ip: string) => void;
+
   onDisconnect: (ip: string) => void;
   onBack: () => void;
   writeRegister: (ip: string, register: number, value: number) => Promise<any>;
+  startVerbosePolling: (ip: string) => void;
+  stopVerbosePolling: (ip: string) => void;
 }
 
 export default function PumpDashboard({
   devices,
   selectedIp,
-  onSelectPump,
+
   onDisconnect,
   onBack,
-  writeRegister
+  writeRegister,
+  startVerbosePolling,
+  stopVerbosePolling
 }: PumpDashboardProps) {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
   const connectedPumps = devices.filter(d => d.status === 'connected');
   const selectedPump = connectedPumps.find(d => d.ip === selectedIp) || connectedPumps[0];
+
+  useEffect(() => {
+    if (selectedPump?.ip) {
+      startVerbosePolling(selectedPump.ip);
+      return () => stopVerbosePolling(selectedPump.ip);
+    }
+  }, [selectedPump?.ip, startVerbosePolling, stopVerbosePolling]);
 
   if (!selectedPump) {
     return (
@@ -44,79 +51,9 @@ export default function PumpDashboard({
     );
   }
 
-  const handlePumpSelect = (ip: string) => {
-    onSelectPump(ip);
-    setIsDrawerOpen(false);
-  };
-
   return (
     <div className="flex h-screen w-screen bg-background overflow-hidden relative">
       
-      {/* Framer Motion Side Drawer */}
-      <AnimatePresence>
-        {isDrawerOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsDrawerOpen(false)}
-              className="absolute inset-0 bg-background/80 backdrop-blur-sm z-40"
-            />
-            {/* Drawer */}
-            <motion.div
-              initial={{ x: '-100%', opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: '-100%', opacity: 0 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="absolute left-0 top-0 bottom-0 w-80 bg-card border-r border-border shadow-2xl z-50 flex flex-col"
-            >
-              <div className="p-6 border-b border-border/50 bg-muted/10">
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-lg font-semibold text-primary">Connected Pumps</h2>
-                  <span className="text-xs font-mono bg-primary text-primary-foreground px-2 py-0.5 rounded-full shadow-sm">
-                    {connectedPumps.length}
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground">Select a device to configure</p>
-              </div>
-              <ScrollArea className="flex-1">
-                <div className="p-4 space-y-2">
-                  {connectedPumps.map((pump) => (
-                    <button
-                      key={pump.ip}
-                      onClick={() => handlePumpSelect(pump.ip)}
-                      className={`w-full text-left p-4 rounded-xl transition-all border outline-none flex items-center justify-between group ${
-                        selectedPump.ip === pump.ip 
-                          ? 'bg-primary/10 border-primary/30 text-foreground shadow-sm' 
-                          : 'bg-transparent border-transparent text-muted-foreground hover:bg-muted/50'
-                      }`}
-                    >
-                      <div>
-                        <div className="font-medium text-sm flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${selectedPump.ip === pump.ip ? 'bg-primary shadow-[0_0_8px_rgba(var(--primary),0.8)]' : 'bg-muted-foreground/50 group-hover:bg-muted-foreground'}`} />
-                          Pump {pump.id || 'Unknown'}
-                        </div>
-                        <div className="text-xs font-mono opacity-70 mt-1 pl-4">{pump.ip}</div>
-                      </div>
-                      {selectedPump.ip === pump.ip && (
-                        <ChevronLeft className="w-4 h-4 text-primary opacity-50 rotate-180" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </ScrollArea>
-              <div className="p-4 border-t border-border/50 bg-muted/10">
-                 <Button variant="ghost" className="w-full text-muted-foreground hover:text-foreground justify-start" onClick={onBack}>
-                   <ChevronLeft className="mr-2 h-4 w-4" /> Back to Discovery
-                 </Button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
       {/* Main Full-Screen Content */}
       <div className="flex-1 flex flex-col h-full w-full">
         {/* Header Bar */}
@@ -124,19 +61,21 @@ export default function PumpDashboard({
           <div className="flex items-center gap-6">
             <Button 
               variant="outline" 
-              onClick={() => setIsDrawerOpen(true)}
+              onClick={onBack}
               className="flex gap-2 text-muted-foreground border-border/50 hover:bg-muted/50 hover:text-foreground"
             >
-              <Menu className="h-4 w-4" /> 
-              <span className="hidden sm:inline font-medium">Pumps Menu</span>
+              <ChevronLeft className="h-4 w-4" /> 
+              <span className="hidden sm:inline font-medium">Back to Connected Devices</span>
             </Button>
-
-            <Separator orientation="vertical" className="h-8 bg-border/50 hidden sm:block" />
 
             <div className="flex flex-col">
               <h1 className="text-xl sm:text-2xl font-light tracking-tight text-foreground flex items-center gap-3">
                 Pump {selectedPump.id}
-                <span className="flex h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
+                <span className={`flex h-2 w-2 rounded-full ${
+                  (selectedPump.failCount || 0) > 0 
+                    ? 'bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)]' 
+                    : 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]'
+                }`}></span>
               </h1>
               <span className="text-primary font-mono tracking-wider text-xs opacity-80 flex items-center gap-2">
                 {selectedPump.ip} 
@@ -157,24 +96,35 @@ export default function PumpDashboard({
         
         {/* Dynamic Content Area */}
         <main className="flex-1 overflow-y-auto bg-background/50 relative">
-          <AnimatePresence mode="wait">
-            {selectedPump.pumpType === 'base' && (
-               <BasePumpDashboard key={`base-${selectedPump.ip}`} device={selectedPump} writeRegister={writeRegister} />
-            )}
-            {selectedPump.pumpType !== 'base' && (
-               <motion.div 
-                 key="unknown-pump"
-                 initial={{ opacity: 0 }}
-                 animate={{ opacity: 1 }}
-                 exit={{ opacity: 0 }}
-                 className="flex flex-col items-center justify-center h-full"
-               >
-                 <Activity className="w-12 h-12 text-muted-foreground opacity-50 mb-4" />
-                 <h2 className="text-xl font-medium text-foreground">Dashboard Not Available</h2>
-                 <p className="text-muted-foreground mt-2">The dashboard for {selectedPump.pumpType} pump is not yet implemented.</p>
-               </motion.div>
-            )}
-          </AnimatePresence>
+          {connectedPumps.map(pump => {
+            const isSelected = pump.ip === selectedPump.ip;
+            
+            if (pump.pumpType === 'base') {
+              return (
+                <div key={`base-${pump.ip}`} className={isSelected ? "block h-full" : "hidden"}>
+                   <BasePumpDashboard device={pump} writeRegister={writeRegister} />
+                </div>
+              );
+            }
+            
+            if (isSelected) {
+              return (
+                 <motion.div 
+                   key={`unknown-${pump.ip}`}
+                   initial={{ opacity: 0 }}
+                   animate={{ opacity: 1 }}
+                   exit={{ opacity: 0 }}
+                   className="flex flex-col items-center justify-center h-full"
+                 >
+                   <Activity className="w-12 h-12 text-muted-foreground opacity-50 mb-4" />
+                   <h2 className="text-xl font-medium text-foreground">Dashboard Not Available</h2>
+                   <p className="text-muted-foreground mt-2">The dashboard for {pump.pumpType} pump is not yet implemented.</p>
+                 </motion.div>
+              );
+            }
+            
+            return null;
+          })}
         </main>
       </div>
     </div>

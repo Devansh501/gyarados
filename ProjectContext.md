@@ -14,13 +14,15 @@ A professional, boilerplate-free Electron application leveraging React, TypeScri
 ## 2. Current Architecture
 The project follows a standard secure Electron architecture and a modular, production-grade React structure:
 
-- **Main Process (`/electron/`):** Handles Node.js APIs, system interactions, network scanning (`scanner.ts`), Modbus connection management (`pumpManager.ts`), and safely exposes IPC handlers (`main.ts`).
+- **Main Process (`/electron/`):** Handles Node.js APIs, system interactions, network scanning (`scanner.ts`), safely exposes IPC handlers (`main.ts`), and manages connections through modular engines (`engines/ConnectivityEngine.ts`, `engines/VerbosePoller.ts`, `engines/AliveCheckPoller.ts`).
 - **Preload Scripts (`/electron/preload/`):** Exposes safe, isolated APIs from the main process to the renderer process via `contextBridge`.
 - **Renderer Process (`/src/`):** A highly scalable React frontend with strict separation of concerns:
-  - **`src/views/`**: Contains main page structures and route layouts (e.g., `DiscoveryView.tsx`, `ConnectionOptions.tsx`).
-  - **`src/hooks/`**: Encapsulates state management, IPC communications, and business logic (e.g., `useDeviceManager.ts`).
+  - **`src/views/`**: Contains main page structures and route layouts (e.g., `DiscoveryView.tsx`, `ConnectedDevicesView.tsx`).
+  - **`src/store/`**: Global state management leveraging Zustand (e.g., `pumpStore.ts`).
+  - **`src/hooks/`**: Encapsulates component-level state and logic (e.g., `useDeviceManager.ts`).
   - **`src/components/ui/`**: Reusable design system elements (e.g., buttons, cards).
-  - **`src/components/animations/`**: Framer Motion animation components.
+  - **`src/components/dashboards/`**: Reusable dashboard components (e.g., `BasePumpDashboard.tsx`, `PumpDashboard.tsx`).
+  - **`src/utils/`**: Helper utilities like `pumpStateParser.ts`.
   - **`src/types/`**: Application-wide TypeScript interfaces (e.g., `device.ts`).
 - **Shared Definitions (`/src/constants.ts`, `/src/registers.ts`):** Centralized files defining network delays, ports, application timeouts, and Modbus registers. Both the Electron backend and React frontend can consume these.
 
@@ -32,6 +34,7 @@ The project follows a standard secure Electron architecture and a modular, produ
 | 2. Dependency Installation | **Complete** | Run `npm install` to set up all necessary packages. |
 | 3. Linting/Formatting | **Complete** | Ensure ESLint and Prettier are configured and integrated for high code quality. |
 | 4. Production Refactor | **Complete** | Restructure UI, separate concerns, centralize constants and registers. |
+| 5. RS-485 & Engine Architecture | **Complete** | Integrated RS-485 connections, separated polling into engine modules (Verbose & AliveCheck), introduced Zustand store. |
 
 ## 4. Networking & Discovery Architecture
 Because the physical pump operates purely as a server and does not broadcast its presence continuously, we have documented the following architectural decisions for device discovery:
@@ -46,6 +49,7 @@ Because the physical pump operates purely as a server and does not broadcast its
 - **Liveness tracking:** Connected pumps are kept online with lightweight Modbus polling. Poll failures are counted and the pump is disconnected after repeated failures.
 
 ## 5. Recent Changes
+- **2026-07-31:** Re-architected Modbus connection management by deprecating `pumpManager.ts` in favor of modular `electron/engines/` (`ConnectivityEngine`, `VerbosePoller`, `AliveCheckPoller`). Added support for RS-485 connections. Introduced Zustand for state management (`src/store/pumpStore.ts`), modularized dashboards (`BasePumpDashboard.tsx`), and a dedicated connected devices view. Added `pumpStateParser.ts` for clean data parsing.
 - **2026-07-07:** Refactored React frontend into production-grade modular structure (`views/`, `hooks/`, `types/`). Centralized all network delays, ports, UI timeouts into `src/constants.ts` and all Modbus maps into `src/registers.ts`. Updated internal tool scripts (`loadTester.ts` and `mockPump.ts`) to use these shared constants and added failure tracking.
 - **2026-06-16:** Improved Wi-Fi discovery and connection handling. Discovery now sends immediate retries to global and per-interface broadcast addresses with a shorter scan window. TCP connection attempts now have an explicit timeout, validate the cycles pending register before reporting connected, and clean up stale in-flight connections safely.
 - **2026-06-12:** Switched Wi-Fi Discovery architecture from TCP Subnet Scanning to UDP Broadcast for instant, industry-standard discovery. Updated discovery logic and mock pump to match the new UDP contract.

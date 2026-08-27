@@ -13,9 +13,11 @@ interface Props {
   onScan: () => void;
   onConnect: (ip: string) => void;
   onSelectPump: (ip: string) => void;
+  onViewConnected: () => void;
 }
 
-export function DiscoveryView({ devices, isScanning, error, onBack, onScan, onConnect, onSelectPump }: Props) {
+export function DiscoveryView({ devices, isScanning, error, onBack, onScan, onConnect, onSelectPump, onViewConnected }: Props) {
+  const connectedCount = devices.filter(d => d.status === 'connected').length;
   return (
     <motion.div 
       key="wifi"
@@ -68,9 +70,16 @@ export function DiscoveryView({ devices, isScanning, error, onBack, onScan, onCo
               <CheckCircle2 className="text-green-500 w-5 h-5" />
               Found {devices.length} {devices.length === 1 ? 'Device' : 'Devices'}
             </h3>
-            <Button variant="outline" size="sm" onClick={onScan} className="text-xs">
-              Rescan
-            </Button>
+            <div className="flex gap-2">
+              {connectedCount > 0 && (
+                <Button variant="secondary" size="sm" onClick={onViewConnected} className="text-xs">
+                  View Connected ({connectedCount})
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={onScan} className="text-xs">
+                Rescan
+              </Button>
+            </div>
           </div>
 
           <div className="space-y-4">

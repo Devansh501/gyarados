@@ -3,8 +3,8 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { UDP_DISCOVERY_PORT, getDefaultModbusPort } from '../src/constants';
 import { toUiDevice, toUiPumpStatus } from './ipcTypes';
+import { connectivityEngine, aliveCheckPoller, verbosePoller } from './engines';
 import { scanWifiDevices } from './scanner';
-import { pumpManager } from './pumpManager';
 import { SerialPort } from 'serialport';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -97,7 +97,7 @@ app.whenReady().then(() => {
 
   ipcMain.handle('connect-pump', async (_event, ip: string, port?: number) => {
     try {
-      await pumpManager.connectPump(ip, port ?? getDefaultModbusPort());
+      await connectivityEngine.connectTCP(ip, port ?? getDefaultModbusPort());
       return { success: true };
     } catch (error: any) {
       return { success: false, error: error?.message ?? 'Connection failed' };
@@ -137,7 +137,7 @@ app.whenReady().then(() => {
       options: { baudRate: number; dataBits: 8 | 7 | 6 | 5; parity: 'none' | 'even' | 'mark' | 'odd' | 'space'; stopBits: 1 | 2 }
     ) => {
       try {
-        const found = await pumpManager.scanRTUDevices(path, options);
+        const found = await connectivityEngine.scanAndConnectRTU(path, options);
         const devices = found.map(f => ({
           id: f.unitId.toString(),
           ip: f.id,
@@ -158,28 +158,53 @@ app.whenReady().then(() => {
   );
 
   ipcMain.handle('disconnect-pump', async (_event, ip: string) => {
-    pumpManager.disconnectPump(ip);
+    connectivityEngine.disconnect(ip);
     return { success: true };
   });
 
   ipcMain.handle('write-register', async (_event, ip: string, register: number, value: number) => {
     try {
-      await pumpManager.writeRegister(ip, register, value);
+      await connectivityEngine.writeRegister(ip, register, value);
       return { success: true };
     } catch (error: any) {
+      console.error(`[IPC] write-register failed for ${ip} reg ${register} val ${value}:`, error);
       return { success: false, error: error?.message ?? 'Failed to write register' };
     }
   });
 
-  pumpManager.on('status-changed', ({ ip, status }) => {
+  ipcMain.handle('start-verbose-polling', async (_event, ip: string) => {
+    try {
+      verbosePoller.start(ip);
+      return { success: true };
+    } catch (error: any) {
+      return { success: false, error: error?.message ?? 'Failed to start verbose polling' };
+    }
+  });
+
+  ipcMain.handle('stop-verbose-polling', async (_event, ip: string) => {
+    try {
+      verbosePoller.stop(ip);
+      return { success: true };
+    } catch (error: any) {
+      return { success: false, error: error?.message ?? 'Failed to stop verbose polling' };
+    }
+  });
+
+  connectivityEngine.on('status-changed', ({ ip, status }) => {
     if (win) {
       win.webContents.send('pump-status-changed', { ip, status: toUiPumpStatus(status) });
     }
   });
 
-  pumpManager.on('pump-test-state', (data) => {
+  aliveCheckPoller.on('pump-test-state', (data) => {
     if (win) {
       win.webContents.send('pump-test-state', data);
+    }
+  });
+
+  verbosePoller.on('pump-state-update', (data) => {
+    if (win) {
+      win.webContents.send('pump-state-update', data);
     }
   });
 
